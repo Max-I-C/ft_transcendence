@@ -113,3 +113,22 @@ button
         background-color: #9df0c7; 
     }
 }
+
+
+/* Style pour register */
+.error-message
+{
+    color: red;
+    font-size: 0.6rem;
+    margin-left: 1rem;
+    display: flex;
+    justify-content: left;
+}
+
+.success-text
+{
+    font-family: sans-serif;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #ac4ebe;
+}

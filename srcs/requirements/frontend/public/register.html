@@ -9,11 +9,15 @@
             <div class="welcome-text">Creation page</div> 
             <div class="form-container">    
                 <input type="text" id="UserName" placeholder="User name"> 
+                <div id="usernameError" class="error-message"></div>
                 <input type="text" id="Email" placeholder="Email"> 
+                <div id="emailError" class="error-message"></div>
                 <input type="password" id="Password" placeholder="password">
+                <div id="passwordError" class="error-message"></div>
                 <input type="password" id="PasswordBis" placeholder="reapet password"> 
             </div>
-            <button class="btn" type="button">Create account</button>
+            <button class="btn" type="button" onclick="return validateForm()">Create account</button>
         </div>
+        <script src="register.js"></script>
     </body>
 </html> 
