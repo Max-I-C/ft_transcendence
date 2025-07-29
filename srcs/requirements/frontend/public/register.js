@@ -42,7 +42,7 @@ async function validateForm()
         }
         catch (error){
             console.error('Error during registration', error);
-            alert('Network or server errro');
+            alert('Network or server errror');
         }
         return true;
     }

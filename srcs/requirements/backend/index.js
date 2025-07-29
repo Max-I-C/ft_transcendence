@@ -48,7 +48,7 @@ fastify.post('/api/register', async (request, reply) =>
         if(existingUser) {
             return reply.code(409).send({ message: 'Users or Email already used'});
         }
-        db.prepare('INSERT INTO users (username, email, password) VALUE (?, ?, ?)').run(username, email, password);
+        db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(username, email, password);
         reply.send({ message: 'Users correctly added' });
     }
     catch(err){
