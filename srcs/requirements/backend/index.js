@@ -35,3 +35,24 @@ fastify.listen({port: 3000, host: '0.0.0.0'}, (err) =>
         process.exit(1);
     }
 });
+
+fastify.post('/api/register', async (request, reply) =>
+{
+    const { username, email, password } = request.body;
+
+    if(!username || !email || !password) {
+        return reply.code(400).send({ message: 'Tous les champs sont requis.' });
+    }
+    try{
+        const existingUser = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?').get(username, email);
+        if(existingUser) {
+            return reply.code(409).send({ message: 'Users or Email already used'});
+        }
+        db.prepare('INSERT INTO users (username, email, password) VALUE (?, ?, ?)').run(username, email, password);
+        reply.send({ message: 'Users correctly added' });
+    }
+    catch(err){
+        fastify.log.error(err);
+        reply.code(500).send({ message: 'Server error'});
+    }
+});
