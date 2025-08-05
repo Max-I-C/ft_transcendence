@@ -17,14 +17,17 @@ fastify.get('/users', async(request, reply) =>
 fastify.post('/api/login', async(request, reply) =>
 {
     const { username, password } = request.body;
-    if(username === 'Admin' && password === 'root')
-    {
-        return reply.send({
-            message: 'Login successful',
-            user: { username }
-        });
-    }
-    reply.code(401).send({ message: 'invalid credential' });  
+
+    const stmt = db.prepare('SELECT * FROM users WHERE username = ?');
+    const user = stmt.get(username);
+
+    if(!user || user.password !== password)
+        reply.code(401).send({ message: 'invalid credential' });  
+    
+    return reply.send({
+        message: 'Login successful',
+        user: { username }
+    });
 });
 
 fastify.listen({port: 3000, host: '0.0.0.0'}, (err) =>
