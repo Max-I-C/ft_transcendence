@@ -1,0 +1,116 @@
+/* BODY */
+body {
+  margin: 0;
+  padding: 0;
+  padding-top: 80px;
+  background: linear-gradient(135deg, #1e1e2f, #3a3a60);
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* TERMINAL STYLE NAVBAR */
+.terminal-navbar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  background-color: #111;
+  border: 2px solid #684b7a;
+  border-radius: 4px;
+  padding: 0.5rem 2rem;
+  font-family: 'Courier New', monospace;
+  z-index: 1000;
+  box-shadow: 0 0 10px #00ff0077;
+}
+
+/* NAV LINKS */
+.terminal-nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* NAV LINKS STYLE */
+.terminal-nav-links li a {
+  text-decoration: none;
+  color: #00ff00;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  transition: background 0.3s, color 0.3s;
+  border-radius: 2px;
+}
+
+/* HOVER EFFECT */
+.terminal-nav-links li a:hover {
+  background-color: rgb(17, 255, 0);
+  color: #111;
+}
+
+
+
+/* GLASS STYLE APPLE */
+.glass {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    inset 0 0 0.5px rgba(255, 255, 255, 0.3),
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  color: white;
+  width: 300px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    inset 0 0 0.5px rgba(255, 255, 255, 0.4),
+    0 15px 40px rgba(0, 0, 0, 0.3),
+    0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), transparent);
+  z-index: -1;
+}
+
+.glass h2 {
+  margin-top: 0;
+}
+
+.glass p {
+  margin: 0.5rem 0;
+}
+
+/* WELCOME BUBBLE */
+.welcome-bubble {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 1.5rem 2rem;
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
+}
