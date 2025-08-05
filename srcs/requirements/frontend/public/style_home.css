@@ -24,7 +24,7 @@ body {
   padding: 0.5rem 2rem;
   font-family: 'Courier New', monospace;
   z-index: 1000;
-  box-shadow: 0 0 10px #00ff0077;
+  box-shadow: 0 0 10px #ffffff77;
 }
 
 /* NAV LINKS */
@@ -39,7 +39,7 @@ body {
 /* NAV LINKS STYLE */
 .terminal-nav-links li a {
   text-decoration: none;
-  color: #00ff00;
+  color: #ffffff;
   font-weight: bold;
   padding: 0.25rem 0.5rem;
   transition: background 0.3s, color 0.3s;
@@ -48,7 +48,7 @@ body {
 
 /* HOVER EFFECT */
 .terminal-nav-links li a:hover {
-  background-color: rgb(17, 255, 0);
+  background-color: #3a3a60;
   color: #111;
 }
 

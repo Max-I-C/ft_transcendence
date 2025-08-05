@@ -22,9 +22,9 @@ fastify.post('/api/login', async(request, reply) =>
     const user = stmt.get(username);
 
     if(!user)
-        reply.code(401).send({ message: 'invalid user' });  
+        return reply.code(401).send({ message: 'invalid user' });  
     else if (user.password !== password)
-        reply.code(402).send({ message: 'invalid password'});
+        return reply.code(402).send({ message: 'invalid password'});
     return reply.send({
         message: 'Login successful',
         user: { username }
