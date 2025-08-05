@@ -19,9 +19,15 @@ document.getElementById('login-form').addEventListener('submit', async function 
             alert('Connexion verifier !');
             window.location.href = '/home.html';
         }
-        else
+        else    
         {
-            alert('Erreur: ' + data.message);
+            const status = response.status;
+            if(status === 401)
+                document.getElementById('userError').innerText = 'Invalid user';
+            else if (status === 402)
+                document.getElementById('passError').innerText = 'Invalid password';
+            else
+                alert('Unknow error');
         }
     }
     catch(err)

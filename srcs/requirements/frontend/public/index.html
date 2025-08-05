@@ -10,7 +10,9 @@
             <div class="form-container">
                 <form id="login-form" class="form-container">
                     <input type="text" id="username" placeholder="login or email" required/>
+                    <div id="userError" class="error-message"></div>
                     <input type="password" id="password" placeholder="password" required/>
+                    <div id="passError" class="error-message"></div>
                     <button class="btn" type="submit">Connect</button>
                     <button class="btn" type="button" onclick="window.location.href='register.html';">Register</button>
                 </form>

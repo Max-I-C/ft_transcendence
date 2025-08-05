@@ -21,9 +21,10 @@ fastify.post('/api/login', async(request, reply) =>
     const stmt = db.prepare('SELECT * FROM users WHERE username = ?');
     const user = stmt.get(username);
 
-    if(!user || user.password !== password)
-        reply.code(401).send({ message: 'invalid credential' });  
-    
+    if(!user)
+        reply.code(401).send({ message: 'invalid user' });  
+    else if (user.password !== password)
+        reply.code(402).send({ message: 'invalid password'});
     return reply.send({
         message: 'Login successful',
         user: { username }
