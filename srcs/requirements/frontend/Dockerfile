@@ -8,3 +8,5 @@ RUN npm install
 COPY . .
 
 RUN npm run build
+
+RUN mkdir -p /frontend_dist && cp -r dist/* /frontend_dist

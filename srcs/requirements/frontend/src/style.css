@@ -8,8 +8,8 @@
 @font-face 
 {
     font-family: 'moonspace'; /* Donne-lui un nom ici */
-    src: url('fonts/moonspace.woff2') format('woff2'),
-         url('fonts/moonspace.woff') format('woff');
+    src: url('/views/fonts/moonspace.woff2') format('woff2'),
+         url('/views/fonts/moonspace.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
@@ -33,7 +33,7 @@ body.auth-page{
     display: flex;
     justify-content: center;
     align-items: center;
-    background: url('images/background.gif') no-repeat center center fixed;
+    background: url('/views/images/background.gif') no-repeat center center fixed;
     background-size: cover;
 }
 

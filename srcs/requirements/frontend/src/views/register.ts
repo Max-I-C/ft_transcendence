@@ -1,4 +1,4 @@
-import { navigateTo } from '../main';
+import { navigateTo } from '../main.js';
 
 export function showRegisterView() {
 	const app = document.getElementById('app')!;
@@ -34,7 +34,7 @@ async function validateForm() {
 	const email = (document.getElementById('Email') as HTMLInputElement).value;
 	const password = (document.getElementById('Password') as HTMLInputElement).value;
 	const passwordBis = (document.getElementById('PasswordBis') as HTMLInputElement).value;
-	const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$/;
+	const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
 	if (!emailRegex.test(email)) {
 		document.getElementById('emailError')!.innerText = 'Invalid email';

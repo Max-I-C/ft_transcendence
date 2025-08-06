@@ -1,4 +1,4 @@
-import { navigateTo } from '../main';
+import { navigateTo } from '../main.js';
 
 export function showProfileView() {
 	const app = document.getElementById('app')!;

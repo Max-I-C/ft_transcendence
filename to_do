@@ -1,4 +1,4 @@
-1. Pass all the html to TypeScript.
+1. Pass all the html to TypeScript. -> DONE ! 
 2. Connect the data of the user with the user profile page.
 3. Build a miniature template of the pong game.
 4. Change the database structure for a bigger and more complete one.
