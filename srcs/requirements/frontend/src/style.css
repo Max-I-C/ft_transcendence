@@ -1,14 +1,148 @@
-/* BODY */
+
+
+/* style.css */
+:root {
+    --main-color: rgb(238, 216, 205);
+}
+
+@font-face 
+{
+    font-family: 'moonspace'; /* Donne-lui un nom ici */
+    src: url('fonts/moonspace.woff2') format('woff2'),
+         url('fonts/moonspace.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+  
 body {
   margin: 0;
   padding: 0;
+  font-family: 'moonspace', 'Segoe UI', sans-serif;
+  height: 100vh;
+}
+
+body.home-page {
   padding-top: 80px;
   background: linear-gradient(135deg, #1e1e2f, #3a3a60);
-  min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+}
+
+body.auth-page{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('images/background.gif') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.main-container
+{
+    background-color: white;
+    padding: 2rem 3rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    text-align: center;
+}
+
+.welcome-text
+{
+    font-size: 1.8 rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.form-container
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+input[type="text"], 
+input[type="email"],
+input[type="password"]
+{
+    font-family: 'moonspace';
+    padding: 0.8rem 1rem;
+    border: 1px solid #cccc;
+    border: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus
+{
+    border-color: #667eea;
+    outline: none;
+}
+
+button
+{
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn
+{
+    font-family: 'moonspace';
+    background-color: transparent;
+    color: #667eea;
+    margin-top: 0.8rem;
+    border: 2px solid #667eea;
+}
+
+.btn:hover
+{
+    background-color: #667eea;
+    color: white;
+}
+
+/* Définition de l'animation */
+@keyframes backgroundChange {
+    0% {
+        background-color: #d2b6ef; 
+    }
+    25% {
+        background-color: #94e3f5; 
+    }
+    50% {
+        background-color: #aff1ad; 
+    }
+    75% {
+        background-color: #f4cddd; 
+    }
+    100% {
+        background-color: #9df0c7; 
+    }
+}
+
+
+/* Style pour register */
+.error-message
+{
+    color: red;
+    font-size: 0.6rem;
+    margin-left: 1rem;
+    display: flex;
+    justify-content: left;
+}
+
+.success-text
+{
+    font-family: sans-serif;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #ac4ebe;
 }
 
 /* TERMINAL STYLE NAVBAR */
