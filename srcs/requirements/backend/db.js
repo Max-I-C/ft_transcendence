@@ -2,6 +2,8 @@ import Database from "better-sqlite3";
 import fs from 'fs';
 
 const dbFile = './data/app.db';
+console.log('📦 SQLite path:', process.cwd() + '/' + dbFile);
+
 
 if(!fs.existsSync('./data'))
 {

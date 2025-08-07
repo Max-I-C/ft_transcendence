@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import bcrypt from 'bcrypt';
 import fastifyJwt from '@fastify/jwt';
 import { db } from './db.js';
 
@@ -28,7 +29,8 @@ fastify.post('/api/login', async(request, reply) =>
 
     if(!user)
         return reply.code(401).send({ message: 'invalid user' });  
-    else if (user.password !== password)
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid)
         return reply.code(402).send({ message: 'invalid password'});
     
     const token = fastify.jwt.sign({
@@ -63,7 +65,8 @@ fastify.post('/api/register', async (request, reply) =>
         if(existingUser) {
             return reply.code(409).send({ message: 'Users or Email already used'});
         }
-        db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(username, email, password);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(username, email, hashedPassword);
         reply.send({ message: 'Users correctly added' });
     }
     catch(err){
