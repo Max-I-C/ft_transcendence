@@ -12,20 +12,27 @@ export async function showProfileView() {
 				<li><a href="#" id="logout-link">⏻</a></li>
 			</ul>
 		</nav>
-		<div class="glass">
-			<h2>Profile</h2>
-			<p><strong>Nom :<span id="username">loading.....</span></p>
-			<p><strong>Email :<span id="email">loading.....</span></p>
-			<p><strong>Status :</strong> Online 🟢</p>
-		</div>
-		<div class="glass">
-			<h2>Game data</h2>
-			<p><strong>Game played :<span id="game_play">loading.....</span></p>
-			<p><strong>Game win :<span id="game_win">loading.....</span></p>
-			<p><strong>Game loss :<span id="game_loss">loading.....</span></p>
-			<p><strong>Score total :<span id="score_total">loading.....</span></p>
-			<p><strong>Level :<span id="level">loading.....</span></p>
-			<p><strong>Rank :<span id="rank">loading.....</span></p>
+		<div class="profile-container">
+			<div class="glass profile-card">
+				<button id="edit-profile" class="edit-btn" title="Edit your profil">🔧</button>
+				<div class="profile-header">
+					<div class="profile-picture" id="profile-picture"></div>
+					<h2>Profile</h2>
+				</div>
+				<p><strong>Userame :<span id="username">loading.....</span></p>
+				<p><strong>Email :<span id="email">loading.....</span></p>
+				<p><strong>2AF :<span id="username">ON/OFF</span></p>
+				<p><strong>Status :</strong> Online 🟢</p>
+			</div>
+			<div class="glass">
+				<h2>Game data</h2>
+				<p><strong>Game played :<span id="game_play">loading.....</span></p>
+				<p><strong>Game win :<span id="game_win">loading.....</span></p>
+				<p><strong>Game loss :<span id="game_loss">loading.....</span></p>
+				<p><strong>Score total :<span id="score_total">loading.....</span></p>
+				<p><strong>Level :<span id="level">loading.....</span></p>
+				<p><strong>Rank :<span id="rank">loading.....</span></p>
+			</div>
 		</div>
 	`;
     
@@ -54,3 +61,4 @@ export async function showProfileView() {
 	(document.getElementById('level') as HTMLElement).innerText = profile.level || 'Unknow';
 	(document.getElementById('rank') as HTMLElement).innerText	= profile.rank || 'Unknow';
 }
+

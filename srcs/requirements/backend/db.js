@@ -25,6 +25,7 @@ db.exec(`
     score_total INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1,
     rank TEXT DEFAULT 'Unranked',
+    
 
     achievements TEXT DEFAULT '[]' -- JSON string, ex: '["first_win", "level_10"]'
   );
