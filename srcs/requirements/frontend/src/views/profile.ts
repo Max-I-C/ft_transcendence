@@ -1,4 +1,5 @@
 import { navigateTo } from '../main.js';
+import { logout } from './auth.js';
 
 export async function showProfileView() {
 	const app = document.getElementById('app')!;
@@ -8,6 +9,7 @@ export async function showProfileView() {
 				<li><a href="#" id="home-link">Home</a></li>
 				<li><a href="#" id="game-link">Game</a></li>
 				<li><a href="#" id="profile-link">Profile</a></li>
+				<li><a href="#" id="logout-link">⏻</a></li>
 			</ul>
 		</nav>
 		<div class="glass">
@@ -22,31 +24,18 @@ export async function showProfileView() {
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
 	document.getElementById('profile-link')!.addEventListener('click', () => navigateTo('/profile'));
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
+	document.getElementById('logout-link')!.addEventListener('click', () => logout());
 	
-	
-	try{
-		const token = localStorage.getItem('token');
-		if(!token)
-			throw new Error('Token not found, please login');
 
-		const response = await fetch('/api/profile', {
-			headers:{
-				'Authorization': `Bearer ${token}`
-			}
-		});
-		if(!response)
-			throw new Error('Failed to fecth the profile');
-		const data = await response.json();
-		const profile = data.profile;
+	const token = localStorage.getItem('token');
+	const response = await fetch('/api/profile', {
+		headers:{
+			'Authorization': `Bearer ${token}`
+		}
+	});
+	const data = await response.json();
+	const profile = data.profile;
 
-		(document.getElementById('username') as HTMLElement).innerText = profile.username || 'Unknow';
-		(document.getElementById('email') as HTMLElement).innerText	= profile.email || 'Unknow';
-	}
-	catch(error)
-	{
-		console.error(error);
-		(document.getElementById('username') as HTMLElement).innerText = 'Error data';
-		(document.getElementById('email') as HTMLElement).innerText	= 'Error data';
-	}
-
+	(document.getElementById('username') as HTMLElement).innerText = profile.username || 'Unknow';
+	(document.getElementById('email') as HTMLElement).innerText	= profile.email || 'Unknow';
 }

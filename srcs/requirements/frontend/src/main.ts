@@ -4,6 +4,7 @@ import { showSuccessView } from './views/success.js';
 import { showHomeView } from './views/home.js';
 import { showProfileView } from './views/profile.js';
 import { showGameView } from './views/game.js';
+import { RequireToken} from './views/auth.js';
 
 export function navigateTo(path: string) {
 	navigationHistory.push(path);
@@ -11,7 +12,15 @@ export function navigateTo(path: string) {
 	router(path);
 }
 
-function router(path: string) {
+const protectedRoutes = ['/home', '/profile', '/game'];
+
+async function router(path: string) {
+	if(protectedRoutes.includes(path)){
+		const isToken = await RequireToken();
+		if(!isToken) 
+			return;
+	}
+
 	switch (path) {
 		case '/':
 		case '/login':

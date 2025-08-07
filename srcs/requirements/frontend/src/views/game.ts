@@ -1,4 +1,5 @@
 import { navigateTo } from '../main.js';
+import { logout } from './auth.js';
 
 export function showGameView() {
 	const app = document.getElementById('app')!;
@@ -8,6 +9,7 @@ export function showGameView() {
 				<li><a href="#" id="home-link">Home</a></li>
 				<li><a href="#" id="game-link">Game</a></li>
 				<li><a href="#" id="profile-link">Profile</a></li>
+				<li><a href="#" id="logout-link">⏻</a></li>
 			</ul>
 		</nav>
 		<div class="welcome-bubble">
@@ -19,4 +21,5 @@ export function showGameView() {
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
 	document.getElementById('profile-link')!.addEventListener('click', () => navigateTo('/profile'));
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
+	document.getElementById('logout-link')!.addEventListener('click', () => logout());
 }
