@@ -3,3 +3,19 @@
 3. Build a miniature template of the pong game.
 4. Change the database structure for a bigger and more complete one.
 5. Create the statistiques of the game.
+6. Hasher les mdp
+7. Verifier si l'identifiant est pas deja prit lors de la creation
+8. Creer une partition pour stocker la bdd.
+
+DATABASE 
+- username 
+- email
+- password
+
+- game_total_played
+- game_win
+- game_history_date
+(
+- game_lose could be calculated by game_total_played - game_win 
+- winrate could also be calculated by % of game_win -> game_total_played
+)
