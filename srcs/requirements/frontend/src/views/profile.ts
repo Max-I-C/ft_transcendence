@@ -18,6 +18,15 @@ export async function showProfileView() {
 			<p><strong>Email :<span id="email">loading.....</span></p>
 			<p><strong>Status :</strong> Online 🟢</p>
 		</div>
+		<div class="glass">
+			<h2>Game data</h2>
+			<p><strong>Game played :<span id="game_play">loading.....</span></p>
+			<p><strong>Game win :<span id="game_win">loading.....</span></p>
+			<p><strong>Game loss :<span id="game_loss">loading.....</span></p>
+			<p><strong>Score total :<span id="score_total">loading.....</span></p>
+			<p><strong>Level :<span id="level">loading.....</span></p>
+			<p><strong>Rank :<span id="rank">loading.....</span></p>
+		</div>
 	`;
     
     document.body.className = 'home-page';
@@ -38,4 +47,10 @@ export async function showProfileView() {
 
 	(document.getElementById('username') as HTMLElement).innerText = profile.username || 'Unknow';
 	(document.getElementById('email') as HTMLElement).innerText	= profile.email || 'Unknow';
+	(document.getElementById('game_play') as HTMLElement).innerText = profile.game_play || 'Unknow';
+	(document.getElementById('game_win') as HTMLElement).innerText	= profile.game_win || 'Unknow';
+	(document.getElementById('game_loss') as HTMLElement).innerText = profile.game_loss || 'Unknow';
+	(document.getElementById('score_total') as HTMLElement).innerText	= profile.score_total || 'Unknow';
+	(document.getElementById('level') as HTMLElement).innerText = profile.level || 'Unknow';
+	(document.getElementById('rank') as HTMLElement).innerText	= profile.rank || 'Unknow';
 }

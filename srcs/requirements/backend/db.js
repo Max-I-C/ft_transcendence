@@ -17,7 +17,16 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+
+    game_play INTEGER DEFAULT 0,
+    game_win INTEGER DEFAULT 0,
+    game_loss INTEGER DEFAULT 0,
+    score_total INTEGER DEFAULT 0,
+    level INTEGER DEFAULT 1,
+    rank TEXT DEFAULT 'Unranked',
+
+    achievements TEXT DEFAULT '[]' -- JSON string, ex: '["first_win", "level_10"]'
   );
 `);
 

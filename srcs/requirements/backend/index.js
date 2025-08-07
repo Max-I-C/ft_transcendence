@@ -88,7 +88,20 @@ fastify.decorate("authenticate", async function(request, reply)
 fastify.get('/api/profile', {preValidation:[fastify.authenticate]}, async (request, reply) => 
 {
     const user = request.user;
-    const stmt = db.prepare('SELECT username, email FROM users WHERE id = ?');
+    const stmt = db.prepare(`
+        SELECT 
+            username, 
+            email,
+            game_play,
+            game_win,
+            game_loss,
+            score_total,
+            level,
+            rank
+        FROM users 
+        WHERE id = ?
+        
+    `);
     const profile = stmt.get(user.id);
     return{profile};
 });
