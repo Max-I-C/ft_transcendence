@@ -31,6 +31,7 @@ export function showLoginView() {
 		const password = (document.getElementById('password') as HTMLInputElement).value;
 
 		try {
+			
 			const response = await fetch('/api/login', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -38,9 +39,13 @@ export function showLoginView() {
 			});
 
 			if (response.ok) {
+				const data = await response.json();
+				localStorage.setItem('token', data.token);
 				alert('Connexion réussie !');
 				navigateTo('/home');
-			} else {
+			} 
+
+			else {
 				const status = response.status;
 				if (status === 401)
 					document.getElementById('userError')!.innerText = 'Invalid user';
@@ -48,7 +53,8 @@ export function showLoginView() {
 					document.getElementById('passError')!.innerText = 'Invalid password';
 				else alert('Unknown error');
 			}
-		} catch (err) {
+		} 
+		catch (err) {
 			alert('Network error');
 			console.error(err);
 		}

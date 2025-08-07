@@ -1,7 +1,12 @@
 import Fastify from 'fastify';
+import fastifyJwt from '@fastify/jwt';
 import { db } from './db.js';
 
 const fastify = Fastify({ logger: true });
+
+fastify.register(fastifyJwt, {
+	secret: 'supersecretkey'
+});
 
 fastify.get('/api/ping', async (request, reply) => 
 {
@@ -25,9 +30,15 @@ fastify.post('/api/login', async(request, reply) =>
         return reply.code(401).send({ message: 'invalid user' });  
     else if (user.password !== password)
         return reply.code(402).send({ message: 'invalid password'});
+    
+    const token = fastify.jwt.sign({
+        id: user.id, 
+        username: user.username
+    })
+
     return reply.send({
         message: 'Login successful',
-        user: { username }
+        token
     });
 });
 
@@ -59,4 +70,22 @@ fastify.post('/api/register', async (request, reply) =>
         fastify.log.error(err);
         reply.code(500).send({ message: 'Server error'});
     }
+});
+
+fastify.decorate("authenticate", async function(request, reply)
+{
+    try{
+        await request.jwtVerify();
+    }
+    catch(err){
+        reply.send(err);
+    }
+});
+
+fastify.get('/api/profile', {preValidation:[fastify.authenticate]}, async (request, reply) => 
+{
+    const user = request.user;
+    const stmt = db.prepare('SELECT username, email FROM users WHERE id = ?');
+    const profile = stmt.get(user.id);
+    return{profile};
 });
