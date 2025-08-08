@@ -20,10 +20,10 @@ db.exec(`
     password TEXT NOT NULL,
     twoaf INTEGER DEFAULT 0,
 
-    game_play INTEGER DEFAULT 0,
-    game_win INTEGER DEFAULT 0,
-    game_loss INTEGER DEFAULT 0,
-    score_total INTEGER DEFAULT 0,
+    game_play INTEGER DEFAULT 10,
+    game_win INTEGER DEFAULT 6,
+    game_loss INTEGER DEFAULT 4,
+    score_total INTEGER DEFAULT 10,
     level INTEGER DEFAULT 1,
     rank TEXT DEFAULT 'Unranked',
     
