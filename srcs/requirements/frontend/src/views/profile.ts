@@ -35,6 +35,23 @@ export async function showProfileView() {
 				<p><strong>Rank :<span id="rank">loading.....</span></p>
 			</div>
 		</div>
+
+		<div class="stat-card">
+			<div class="stat-cards">
+				<div class="game-stat">
+					<h3>Games played</h3>
+					<p id="games-played">loading...</p>
+				</div>
+				<div class="game-stat">
+					<h3>Games won</h3>
+					<p id="games-won">loading...</p>
+				</div>
+				<div class="game-stat">
+					<h3>Games lost</h3>
+					<p id="games-lost">loading...</p>
+				</div>
+			</div>
+		</div>
 	`;
     
     document.body.className = 'home-page';
