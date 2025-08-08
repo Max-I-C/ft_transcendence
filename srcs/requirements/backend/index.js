@@ -110,6 +110,10 @@ fastify.post('/api/profile/update', { preValidation: [fastify.authenticate] }, a
     const user = request.user;
     const { username, email, twoaf } = request.body;
 
+    const existingUser = db.prepare('SELECT * FROM users WHERE (username = ? OR email = ?) AND id != ?').get(username, email, user.id);
+    if(existingUser) {
+        return reply.code(409).send({ message: 'Users or Email already used'});
+    }
     try{
         const stmt = db.prepare(`
 			UPDATE users 
