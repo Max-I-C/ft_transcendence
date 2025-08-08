@@ -105,3 +105,22 @@ fastify.get('/api/profile', {preValidation:[fastify.authenticate]}, async (reque
     const profile = stmt.get(user.id);
     return{profile};
 });
+
+fastify.post('/api/profile/update', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const { username, email, twoaf } = request.body;
+
+    try{
+        const stmt = db.prepare(`
+			UPDATE users 
+			SET username = ?, email = ?, twoaf = ?
+			WHERE id = ?
+		`);
+		stmt.run(username, email, twoaf ? 1 : 0, user.id);
+		return { message: 'Profil mis à jour' };
+	} 
+    catch (err) {
+		fastify.log.error(err);
+		reply.code(500).send({ message: 'Erreur serveur' });
+	}
+});

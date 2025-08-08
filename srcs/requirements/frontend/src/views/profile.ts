@@ -19,10 +19,11 @@ export async function showProfileView() {
 					<div class="profile-picture" id="profile-picture"></div>
 					<h2>Profile</h2>
 				</div>
-				<p><strong>Userame :<span id="username">loading.....</span></p>
-				<p><strong>Email :<span id="email">loading.....</span></p>
-				<p><strong>2AF :<span id="username">ON/OFF</span></p>
+				<p><strong>Userame :</strong> <span id="username-text">loading.....</span> <input id="username-input" type="text" style="display: none;"></p>
+				<p><strong>Email :</strong> <span id="email-text">loading.....</span> <input id="email-input" type="email" style="display: none;"></p>
+				<p><strong>2AF :</strong> <span id="twoaf-text">OFF</span> <input id="twoaf-input" type="checkbox" style="display: none;"></p>
 				<p><strong>Status :</strong> Online 🟢</p>
+				<button id="save-profile" class="save-btn" style="display: none;">💾 Save</button>
 			</div>
 			<div class="glass">
 				<h2>Game data</h2>
@@ -52,13 +53,62 @@ export async function showProfileView() {
 	const data = await response.json();
 	const profile = data.profile;
 
-	(document.getElementById('username') as HTMLElement).innerText = profile.username || 'Unknow';
-	(document.getElementById('email') as HTMLElement).innerText	= profile.email || 'Unknow';
+	(document.getElementById('username-text') as HTMLElement).innerText = profile.username || 'Unknow';
+	(document.getElementById('email-text') as HTMLElement).innerText	= profile.email || 'Unknow';
 	(document.getElementById('game_play') as HTMLElement).innerText = profile.game_play || 'Unknow';
 	(document.getElementById('game_win') as HTMLElement).innerText	= profile.game_win || 'Unknow';
 	(document.getElementById('game_loss') as HTMLElement).innerText = profile.game_loss || 'Unknow';
 	(document.getElementById('score_total') as HTMLElement).innerText	= profile.score_total || 'Unknow';
 	(document.getElementById('level') as HTMLElement).innerText = profile.level || 'Unknow';
 	(document.getElementById('rank') as HTMLElement).innerText	= profile.rank || 'Unknow';
+
+	document.getElementById('edit-profile')!.addEventListener('click', () => {
+		const usernameText = document.getElementById('username-text')!;
+		const usernameInput = document.getElementById('username-input') as HTMLInputElement;
+		const emailText = document.getElementById('email-text')!;
+		const emailInput = document.getElementById('email-input') as HTMLInputElement;
+		const twoafText = document.getElementById('twoaf-text')!;
+		const twoafInput = document.getElementById('twoaf-input') as HTMLInputElement;
+		const saveBtn = document.getElementById('save-profile')!;
+
+		usernameInput.value = usernameText.textContent || '';
+		emailInput.value = emailText.textContent || '';
+		twoafInput.checked = twoafText.textContent === 'ON';
+
+		usernameText.style.display = 'none';
+		usernameInput.style.display = 'inline';
+		emailText.style.display = 'none';
+		emailInput.style.display = 'inline';
+		twoafText.style.display = 'none';
+		twoafInput.style.display = 'inline';
+		saveBtn.style.display = 'inline';
+	});
+
+	document.getElementById('save-profile')!.addEventListener('click', async () => {
+		const token = localStorage.getItem('token');
+
+		const updatedProfile = {
+			username: (document.getElementById('username-input') as HTMLInputElement).value,
+			email: (document.getElementById('email-input') as HTMLInputElement).value,
+			twoaf: (document.getElementById('twoaf-input') as HTMLInputElement).value,
+		};
+
+		const response = await fetch('/api/profile/update', {
+			method: 'POST',
+			headers:{
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${token}`
+			},
+			body: JSON.stringify(updatedProfile)
+		});
+		if(response.ok){
+			alert('Profil mis a jour !');
+			showProfileView();
+		}
+		else{
+			alert('Erreur lors de l update');
+		}
+	});
+
 }
 

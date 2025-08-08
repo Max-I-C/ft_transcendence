@@ -18,6 +18,8 @@ db.exec(`
     username TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
+    twoaf INTEGER DEFAULT 0,
+    profile_picture TEXT NOT NULL,
 
     game_play INTEGER DEFAULT 0,
     game_win INTEGER DEFAULT 0,
