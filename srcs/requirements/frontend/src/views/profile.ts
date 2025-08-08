@@ -118,7 +118,9 @@ export async function showProfileView() {
 					<span style="color: #f44336; font-weight:bold; margin-left: 20px;">&#9632; Loss</span>
 				</div>
 			</div>
-
+			<div class="rank-image" style="text-align:center; margin-top:15px;">
+				<img src="/views/images/bronze.png" alt="Player Rank" style="max-width:150px;">
+			</div>
 		</div>
 	`;
     
@@ -147,6 +149,10 @@ export async function showProfileView() {
 	(document.getElementById('level') as HTMLElement).innerText = profile.level ?? 'Unknow';
 	(document.getElementById('rank') as HTMLElement).innerText	= profile.rank ?? 'Unknow';
 
+	(document.getElementById('games-played') as HTMLElement).innerText = profile.game_play ?? 'Unknow';
+	(document.getElementById('games-won') as HTMLElement).innerText = profile.game_win ?? 'Unknow';
+	(document.getElementById('games-lost') as HTMLElement).innerText = profile.game_loss ?? 'Unknow';
+	
 	if (typeof profile.game_win === 'number' && typeof profile.game_loss === 'number') {
 		drawDonutChart(profile.game_win, profile.game_loss);
 	}
