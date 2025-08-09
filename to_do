@@ -19,3 +19,6 @@ DATABASE
 - game_lose could be calculated by game_total_played - game_win 
 - winrate could also be calculated by % of game_win -> game_total_played
 )
+
+
+Faire attention dans l'update de l'A2F dans le profile sa mets pas a jour 

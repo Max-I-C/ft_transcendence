@@ -88,7 +88,7 @@ fastify.decorate("authenticate", async function(request, reply)
 fastify.get('/api/profile', {preValidation:[fastify.authenticate]}, async (request, reply) => 
 {
     const user = request.user;
-    const stmt = db.prepare(`
+    const stmtProfile = db.prepare(`
         SELECT 
             username, 
             email,
@@ -102,8 +102,22 @@ fastify.get('/api/profile', {preValidation:[fastify.authenticate]}, async (reque
         WHERE id = ?
         
     `);
-    const profile = stmt.get(user.id);
-    return{profile};
+    const profile = stmtProfile.get(user.id);
+    if (!profile) {
+        reply.code(404).send({ error: 'User not found' });
+        return;
+    }
+    
+    const stmtLogs = db.prepare(`
+        SELECT match_date, result, points_change 
+        FROM match_history 
+        WHERE user_id = ? 
+        ORDER BY match_date DESC 
+        LIMIT 10
+    `);
+    const match_logs = stmtLogs.all(user.id);
+
+    return{profile, match_logs};
 });
 
 fastify.post('/api/profile/update', { preValidation: [fastify.authenticate] }, async (request, reply) => {
@@ -128,3 +142,33 @@ fastify.post('/api/profile/update', { preValidation: [fastify.authenticate] }, a
 		reply.code(500).send({ message: 'Erreur serveur' });
 	}
 });
+
+fastify.post('/api/simulate-match', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const { match_score, result, points_change } = request.body;
+
+    if(!match_score || !result || !points_change)
+        return(reply.code(400).send({ message: 'Error, not enought info'}));
+    try {
+        const insertStmt = db.prepare(`
+            INSERT INTO match_history (user_id, match_score, result, points_change)
+            VALUES (?, ?, ?, ?)
+        `);
+        insertStmt.run(user.id, match_score, result, points_change);
+        const updateStatsStmt = db.prepare(`
+            UPDATE users
+            SET
+                game_play = game_play + 1,
+                game_win = game_win + CASE WHEN ? = 'win' THEN 1 ELSE 0 END,
+                game_loss = game_loss + CASE WHEN ? = 'loss' THEN 1 ELSE 0 END,
+                score_total = score_total + ?
+            WHERE id = ?
+        `);
+        updateStatsStmt.run(result, result, points_change, user.id);
+        return {message: 'Simualtion complete'};
+    }
+    catch (err){
+        fastify.log.error(err);
+        return reply.code(500).send({ message: 'Server error'});
+    }
+})

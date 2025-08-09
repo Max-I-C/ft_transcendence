@@ -4,6 +4,7 @@ import { showSuccessView } from './views/success.js';
 import { showHomeView } from './views/home.js';
 import { showProfileView } from './views/profile.js';
 import { showGameView } from './views/game.js';
+import { showSocialView } from './views/social.js';
 import { RequireToken} from './views/auth.js';
 
 export function navigateTo(path: string) {
@@ -12,7 +13,7 @@ export function navigateTo(path: string) {
 	router(path);
 }
 
-const protectedRoutes = ['/home', '/profile', '/game'];
+const protectedRoutes = ['/home', '/profile', '/game', '/social'];
 
 async function router(path: string) {
 	if(protectedRoutes.includes(path)){
@@ -37,6 +38,9 @@ async function router(path: string) {
 			break;
 		case '/profile':
 			showProfileView();
+			break;
+		case '/social':
+			showSocialView();
 			break;
 		case '/game':
 			showGameView();

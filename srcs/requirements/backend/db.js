@@ -32,4 +32,18 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS match_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    match_date DATETIME DEFAULT CURRENT_TIMESTAMP, -- date du match
+    match_score TEXT NOT NULL,                     -- ex: "2-3"
+    result TEXT CHECK(result IN ('win', 'loss')) NOT NULL, -- win ou loss
+    points_change INTEGER NOT NULL,                -- ex: +30 ou -15
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+`);
+
+
 export { db };

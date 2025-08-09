@@ -60,6 +60,7 @@ export async function showProfileView() {
 			<ul class="terminal-nav-links">
 				<li><a href="#" id="home-link">Home</a></li>
 				<li><a href="#" id="game-link">Game</a></li>
+				<li><a href="#" id="social-link">Social</a></li>
 				<li><a href="#" id="profile-link">Profile</a></li>
 				<li><a href="#" id="logout-link">⏻</a></li>
 			</ul>
@@ -121,6 +122,7 @@ export async function showProfileView() {
 			<div class="rank-section">
 				<!-- Rang actuel -->
 				<div class="current-rank">
+					<div class="rank-title">Actual Rank</div>
 					<img src="/views/images/bronze.png" alt="Current Rank">
 					<div class="rank-label">Bronze</div>
 				</div>
@@ -128,12 +130,13 @@ export async function showProfileView() {
 				<!-- Boîte score + rang suivant -->
 				<div class="score-next">
 					<div class="score">
-						<span class="score-value">1230</span>
+						<span class="score-value" id="score">1230</span>
 						<span class="score-label">Points</span>
 					</div>
 					<div class="separator"></div>
 					<div class="next-rank">
-						<img src="/views/images/bronze.png" alt="Next Rank">
+						<div class="rank-title">Next Rank</div>
+						<img src="/views/images/silver.png" alt="Next Rank">
 						<div class="next-label">Silver - 1500 pts</div>
 					</div>
 				</div>
@@ -144,9 +147,9 @@ export async function showProfileView() {
     document.body.className = 'home-page';
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
 	document.getElementById('profile-link')!.addEventListener('click', () => navigateTo('/profile'));
+	document.getElementById('social-link')!.addEventListener('click', () => navigateTo('/social'));	
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
 	document.getElementById('logout-link')!.addEventListener('click', () => logout());
-	
 
 	const token = localStorage.getItem('token');
 	const response = await fetch('/api/profile', {
@@ -154,8 +157,15 @@ export async function showProfileView() {
 			'Authorization': `Bearer ${token}`
 		}
 	});
+	
+	interface MatchLog {
+		match_date: string;
+		result: string;
+		points_change: number;
+	}	  
 	const data = await response.json();
 	const profile = data.profile;
+	const matchLogs: MatchLog[] = data.match_logs;
 
 	(document.getElementById('username-text') as HTMLElement).innerText = profile.username ?? 'Unknow';
 	(document.getElementById('email-text') as HTMLElement).innerText	= profile.email ?? 'Unknow';
@@ -169,7 +179,22 @@ export async function showProfileView() {
 	(document.getElementById('games-played') as HTMLElement).innerText = profile.game_play ?? 'Unknow';
 	(document.getElementById('games-won') as HTMLElement).innerText = profile.game_win ?? 'Unknow';
 	(document.getElementById('games-lost') as HTMLElement).innerText = profile.game_loss ?? 'Unknow';
+	(document.getElementById('score') as HTMLElement).innerText = profile.score_total ?? 'Unknow';
 	
+	const logsList = (document.getElementById('logs-list'))!;
+	logsList.innerHTML = '';
+
+	if(matchLogs && matchLogs.length > 0) {
+		matchLogs.forEach((log: MatchLog) => {
+			const li = document.createElement('li');
+			li.textContent = `Date: ${new Date(log.match_date).toLocaleString()} - Result: ${log.result} - Score: ${log.points_change}`;
+			logsList.appendChild(li);
+		});
+	}
+	else {
+		logsList.innerHTML = '<li>No match logs found.</li>'
+	}
+
 	if (typeof profile.game_win === 'number' && typeof profile.game_loss === 'number') {
 		drawDonutChart(profile.game_win, profile.game_loss);
 	}
