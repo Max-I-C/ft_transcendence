@@ -118,8 +118,25 @@ export async function showProfileView() {
 					<span style="color: #f44336; font-weight:bold; margin-left: 20px;">&#9632; Loss</span>
 				</div>
 			</div>
-			<div class="rank-image" style="text-align:center; margin-top:15px;">
-				<img src="/views/images/bronze.png" alt="Player Rank" style="max-width:150px;">
+			<div class="rank-section">
+				<!-- Rang actuel -->
+				<div class="current-rank">
+					<img src="/views/images/bronze.png" alt="Current Rank">
+					<div class="rank-label">Bronze</div>
+				</div>
+
+				<!-- Boîte score + rang suivant -->
+				<div class="score-next">
+					<div class="score">
+						<span class="score-value">1230</span>
+						<span class="score-label">Points</span>
+					</div>
+					<div class="separator"></div>
+					<div class="next-rank">
+						<img src="/views/images/bronze.png" alt="Next Rank">
+						<div class="next-label">Silver - 1500 pts</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	`;

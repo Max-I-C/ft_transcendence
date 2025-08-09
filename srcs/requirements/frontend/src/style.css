@@ -426,3 +426,72 @@ button
 	border-radius: 8px;
 	box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
+.rank-section {
+	display: flex;
+	align-items: center;
+	background: #222;
+	color: white;
+	padding: 15px;
+	border-radius: 10px;
+	gap: 20px;
+}
+
+.current-rank {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.current-rank img {
+	width: 80px;
+}
+
+.rank-label {
+	margin-top: 5px;
+	font-weight: bold;
+}
+
+.score-next {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	background: #333;
+	padding: 10px;
+	border-radius: 8px;
+	gap: 20px;
+}
+
+.score {
+	text-align: center;
+}
+
+.score-value {
+	font-size: 2rem;
+	font-weight: bold;
+	color: gold;
+	display: block;
+}
+
+.score-label {
+	font-size: 0.9rem;
+}
+
+.separator {
+	width: 2px;
+	background: white;
+	height: 60px;
+}
+
+.next-rank {
+	text-align: center;
+}
+
+.next-rank img {
+	width: 80px;
+}
+
+.next-label {
+	margin-top: 5px;
+	font-size: 0.9rem;
+}
