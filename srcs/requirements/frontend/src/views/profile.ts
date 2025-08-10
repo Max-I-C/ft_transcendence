@@ -123,21 +123,21 @@ export async function showProfileView() {
 				<!-- Rang actuel -->
 				<div class="current-rank">
 					<div class="rank-title">Actual Rank</div>
-					<img src="/views/images/bronze.png" alt="Current Rank">
-					<div class="rank-label">Bronze</div>
+					<img id="currentRankImg" src="" alt="Current Rank">
+					<div id="currentRankLabel" class="rank-label"></div>
 				</div>
 
 				<!-- Boîte score + rang suivant -->
 				<div class="score-next">
 					<div class="score">
-						<span class="score-value" id="score">1230</span>
+						<span class="score-value" id="score"></span>
 						<span class="score-label">Points</span>
 					</div>
 					<div class="separator"></div>
 					<div class="next-rank">
 						<div class="rank-title">Next Rank</div>
-						<img src="/views/images/silver.png" alt="Next Rank">
-						<div class="next-label">Silver - 1500 pts</div>
+						<img id="nextRankImg" src="" alt="Next Rank">
+						<div id="nextRankLabel" class="next-label"></div>
 					</div>
 				</div>
 			</div>
@@ -174,13 +174,45 @@ export async function showProfileView() {
 	(document.getElementById('game_loss') as HTMLElement).innerText = profile.game_loss ?? 'Unknow';
 	(document.getElementById('score_total') as HTMLElement).innerText	= profile.score_total ?? 'Unknow';
 	(document.getElementById('level') as HTMLElement).innerText = profile.level ?? 'Unknow';
-	(document.getElementById('rank') as HTMLElement).innerText	= profile.rank ?? 'Unknow';
 
 	(document.getElementById('games-played') as HTMLElement).innerText = profile.game_play ?? 'Unknow';
 	(document.getElementById('games-won') as HTMLElement).innerText = profile.game_win ?? 'Unknow';
 	(document.getElementById('games-lost') as HTMLElement).innerText = profile.game_loss ?? 'Unknow';
 	(document.getElementById('score') as HTMLElement).innerText = profile.score_total ?? 'Unknow';
 	
+	const currentRankImg = document.getElementById('currentRankImg') as HTMLImageElement;
+	const currentRankLabel = document.getElementById('currentRankLabel') as HTMLDivElement;
+
+	const nextRankImg = document.getElementById('nextRankImg') as HTMLImageElement;
+	const nextRankLabel = document.getElementById('nextRankLabel') as HTMLDivElement;
+	
+	const score = profile.score_total;
+
+	const ranks = [
+  		{ name: 'Bronze', min: 0, max: 99, img: '/views/images/bronze.png', next: 'Silver', nextPoints: 100, nextImg: '/views/images/silver.png' },
+		{ name: 'Silver', min: 100, max: 199, img: '/views/images/silver.png', next: 'Gold', nextPoints: 200, nextImg: '/views/images/gold.png' },
+		{ name: 'Gold', min: 200, max: 299, img: '/views/images/gold.png', next: 'Amethiste', nextPoints: 300, nextImg: '/views/images/amethiste.png' },
+		{ name: 'Amethiste', min: 300, max: Infinity, img: '/views/images/amethiste.png', next: null, nextPoints: null, nextImg: null }
+	];
+
+	const currentRank = ranks.find(r => score >= r.min && score <= r.max);
+
+	if (currentRank) {
+  		// Mettre à jour le rang actuel
+  		if (currentRankImg) currentRankImg.src = currentRank.img;
+  		if (currentRankLabel) currentRankLabel.textContent = currentRank.name;
+		(document.getElementById('rank') as HTMLElement).innerText	= currentRank.name ?? 'Unknow';
+  		// Mettre à jour le rang suivant
+		if (currentRank.next) {
+			if (nextRankImg) nextRankImg.src = currentRank.nextImg!;
+    		if (nextRankLabel) nextRankLabel.textContent = `${currentRank.next} - ${currentRank.nextPoints} pts`;
+  		} 
+  		else {
+    		if (nextRankImg) nextRankImg.style.display = 'none';
+			if (nextRankLabel) nextRankLabel.textContent = 'Max Rank';
+  		}
+	}
+
 	const logsList = (document.getElementById('logs-list'))!;
 	logsList.innerHTML = '';
 

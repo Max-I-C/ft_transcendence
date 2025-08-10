@@ -31,7 +31,7 @@ export function showGameView() {
 		const token = localStorage.getItem('token');
 		const matchData = {
 			match_score: '2-3',
-			result: 'loss',
+			result: 'win',
 			points_change: +20
 		};
 

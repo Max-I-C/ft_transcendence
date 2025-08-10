@@ -96,8 +96,7 @@ fastify.get('/api/profile', {preValidation:[fastify.authenticate]}, async (reque
             game_win,
             game_loss,
             score_total,
-            level,
-            rank
+            level
         FROM users 
         WHERE id = ?
         
