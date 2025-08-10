@@ -146,29 +146,38 @@ export async function showProfileView() {
 		</div>
 	`;
     
+	/* definition de la nav bar */
     document.body.className = 'home-page';
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
 	document.getElementById('profile-link')!.addEventListener('click', () => navigateTo('/profile'));
 	document.getElementById('social-link')!.addEventListener('click', () => navigateTo('/social'));	
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
 	document.getElementById('logout-link')!.addEventListener('click', () => logout());
+	/* ------------------- */
 
+	/* Recuperation du token dans le local storage de la page web */
 	const token = localStorage.getItem('token');
+	
+	/* Envois de la requete a l'API backend  */
 	const response = await fetch('/api/profile', {
 		headers:{
 			'Authorization': `Bearer ${token}`
 		}
 	});
 	
+	/* Declaration des variables pour les logs */
 	interface MatchLog {
 		match_date: string;
 		result: string;
 		points_change: number;
-	}	  
+	}
+
+	/* Gestion des requetes bakend afin de recevoir toute les données du profile */
 	const data = await response.json();
 	const profile = data.profile;
 	const matchLogs: MatchLog[] = data.match_logs;
 
+	/* Attribution des valeurs des variables a la page web */
 	(document.getElementById('username-text') as HTMLElement).innerText = profile.username ?? 'Unknow';
 	(document.getElementById('email-text') as HTMLElement).innerText	= profile.email ?? 'Unknow';
 	(document.getElementById('game_play') as HTMLElement).innerText = profile.game_play ?? 'Unknow';
@@ -182,6 +191,7 @@ export async function showProfileView() {
 	(document.getElementById('games-lost') as HTMLElement).innerText = profile.game_loss ?? 'Unknow';
 	(document.getElementById('score') as HTMLElement).innerText = profile.score_total ?? 'Unknow';
 	
+	/* Partie sur la definition de la partie gerant les rangs */
 	const currentRankImg = document.getElementById('currentRankImg') as HTMLImageElement;
 	const currentRankLabel = document.getElementById('currentRankLabel') as HTMLDivElement;
 
@@ -215,6 +225,7 @@ export async function showProfileView() {
   		}
 	}
 
+	/* Partie gerant les logs des matchs du profile */
 	const logsList = (document.getElementById('logs-list'))!;
 	logsList.innerHTML = '';
 
@@ -229,10 +240,12 @@ export async function showProfileView() {
 		logsList.innerHTML = '<li>No match logs found.</li>'
 	}
 
+	/* Partie servant a dessiner le graph de winrate */
 	if (typeof profile.game_win === 'number' && typeof profile.game_loss === 'number') {
 		drawDonutChart(profile.game_win, profile.game_loss);
 	}
 
+	/* Partie qui update le profile de l'utilisateur */
 	document.getElementById('edit-profile')!.addEventListener('click', () => {
 		const usernameText = document.getElementById('username-text')!;
 		const usernameInput = document.getElementById('username-input') as HTMLInputElement;
@@ -260,6 +273,7 @@ export async function showProfileView() {
     	passwordConfirmInput.style.display = 'inline';
 	});
 
+	/* Partie gerant l'envois des requetes au backend et prepare les variables */
 	document.getElementById('save-profile')!.addEventListener('click', async () => {
 		const token = localStorage.getItem('token');
     	const password = (document.getElementById('password-input') as HTMLInputElement).value;
