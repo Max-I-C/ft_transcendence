@@ -75,6 +75,8 @@ export async function showProfileView() {
 				<p><strong>Userame :</strong> <span id="username-text">loading.....</span> <input id="username-input" type="text" style="display: none;"></p>
 				<p><strong>Email :</strong> <span id="email-text">loading.....</span> <input id="email-input" type="email" style="display: none;"></p>
 				<p><strong>2AF :</strong> <span id="twoaf-text">OFF</span> <input id="twoaf-input" type="checkbox" style="display: none;"></p>
+				<p><strong>New password :</strong> <input id="password-input" type="password" style="display: none;"></p>
+				<p><strong>Confirm password :</strong> <input id="password-confirm-input" type="password" style="display: none;"></p>
 				<p><strong>Status :</strong> Online 🟢</p>
 				<button id="save-profile" class="save-btn" style="display: none;">💾 Save</button>
 			</div>
@@ -240,6 +242,9 @@ export async function showProfileView() {
 		const twoafInput = document.getElementById('twoaf-input') as HTMLInputElement;
 		const saveBtn = document.getElementById('save-profile')!;
 
+    	const passwordInput = document.getElementById('password-input') as HTMLInputElement;
+    	const passwordConfirmInput = document.getElementById('password-confirm-input') as HTMLInputElement;
+
 		usernameInput.value = usernameText.textContent || '';
 		emailInput.value = emailText.textContent || '';
 		twoafInput.checked = twoafText.textContent === 'ON';
@@ -251,16 +256,29 @@ export async function showProfileView() {
 		twoafText.style.display = 'none';
 		twoafInput.style.display = 'inline';
 		saveBtn.style.display = 'inline';
+		passwordInput.style.display = 'inline';
+    	passwordConfirmInput.style.display = 'inline';
 	});
 
 	document.getElementById('save-profile')!.addEventListener('click', async () => {
 		const token = localStorage.getItem('token');
+    	const password = (document.getElementById('password-input') as HTMLInputElement).value;
+    	const confirmPassword = (document.getElementById('password-confirm-input') as HTMLInputElement).value;
 
-		const updatedProfile = {
+		if (password && password !== confirmPassword) {
+			alert('Passwords do not match!');
+			return;
+		}
+
+		const updatedProfile : any = {
 			username: (document.getElementById('username-input') as HTMLInputElement).value,
 			email: (document.getElementById('email-input') as HTMLInputElement).value,
-			twoaf: (document.getElementById('twoaf-input') as HTMLInputElement).value,
+			twoaf: (document.getElementById('twoaf-input') as HTMLInputElement).checked,
 		};
+		
+		if (password) {
+        	updatedProfile.password = password;
+    	}
 
 		const response = await fetch('/api/profile/update', {
 			method: 'POST',

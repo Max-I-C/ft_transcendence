@@ -121,25 +121,40 @@ fastify.get('/api/profile', {preValidation:[fastify.authenticate]}, async (reque
 
 fastify.post('/api/profile/update', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
-    const { username, email, twoaf } = request.body;
+    const { username, email, twoaf, password } = request.body;
 
-    const existingUser = db.prepare('SELECT * FROM users WHERE (username = ? OR email = ?) AND id != ?').get(username, email, user.id);
-    if(existingUser) {
-        return reply.code(409).send({ message: 'Users or Email already used'});
+    const existingUser = db.prepare('SELECT * FROM users WHERE (username = ? OR email = ?) AND id != ?')
+        .get(username, email, user.id);
+    
+        if(existingUser) {
+        return reply.code(409).send({ message: 'Username or Email already used' });
     }
-    try{
-        const stmt = db.prepare(`
-			UPDATE users 
-			SET username = ?, email = ?, twoaf = ?
-			WHERE id = ?
-		`);
-		stmt.run(username, email, twoaf ? 1 : 0, user.id);
-		return { message: 'Profil mis à jour' };
-	} 
+
+    try {
+        let query = `
+            UPDATE users
+            SET username = ?, email = ?, twoaf = ?
+        `;
+        const params = [username, email, twoaf ? 1 : 0];
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            query += `, password = ?`;
+            params.push(hashedPassword);
+        }
+
+        query += ` WHERE id = ?`;
+        params.push(user.id);
+
+        const stmt = db.prepare(query);
+        stmt.run(...params);
+
+        return { message: 'Profil mis à jour' };
+    } 
     catch (err) {
-		fastify.log.error(err);
-		reply.code(500).send({ message: 'Erreur serveur' });
-	}
+        fastify.log.error(err);
+        reply.code(500).send({ message: 'Erreur serveur' });
+    }
 });
 
 fastify.post('/api/simulate-match', { preValidation: [fastify.authenticate] }, async (request, reply) => {
