@@ -22,8 +22,8 @@ export function showSocialView() {
 					<li tabindex="0">@Bob</li>
 					<li tabindex="0">@Charlie</li>
       			</ul>
-				<form class="add-friend" onsubmit="event.preventDefault(); addFriend();">
-        			<input id="friendUsername" type="text" placeholder="Ajouter un ami par username" aria-label="Nom d'utilisateur à ajouter" required />
+				<form class="add-friend">
+				 	<input id="friendUsername" type="text" placeholder="Ajouter un ami par username" aria-label="Nom d'utilisateur à ajouter" required />
         			<button id="addBtn" type="submit" disabled>Ajouter</button>
       			</form>
     		</section>
@@ -42,4 +42,43 @@ export function showSocialView() {
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
     document.getElementById('social-link')!.addEventListener('click', () => navigateTo('/social'));
 	document.getElementById('logout-link')!.addEventListener('click', () => logout());
+
+	const friendInput = document.getElementById('friendUsername') as HTMLInputElement;
+	const addBtn = document.getElementById('addBtn') as HTMLButtonElement;
+	
+	friendInput.addEventListener('input', () => {
+		addBtn.disabled = friendInput.value.trim() === '';
+	});
+
+	document.querySelector('.add-friend')!.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const token = localStorage.getItem('token');
+		const usernameFriend = (document.getElementById('friendUsername') as HTMLInputElement).value.trim();
+		
+		if(!usernameFriend) return;
+		try{
+			const response = await fetch('/api/social/request', { 
+				method: 'POST',
+				headers:{
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ friendUsername: usernameFriend })
+			});
+			if(response.ok){
+				alert('Invitation correctement envoyer !');
+				(document.getElementById('friendUsername') as HTMLInputElement).value = "";
+				addBtn.disabled = true;
+			}
+			else{
+				const errorData = await response.json();
+				alert(errorData.message || 'Erreur lors de l invitation');
+			}
+		}
+		catch(err){
+			console.error(err);
+			alert('Network Error');
+		}
+	});	
+
 }

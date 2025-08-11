@@ -186,3 +186,7 @@ fastify.post('/api/simulate-match', { preValidation: [fastify.authenticate] }, a
         return reply.code(500).send({ message: 'Server error'});
     }
 })
+
+fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    return {message: 'All good'};
+});

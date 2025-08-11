@@ -571,6 +571,7 @@ button
   margin-top: 1rem;
   display: flex;
   gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .add-friend input[type="text"] {
@@ -583,6 +584,7 @@ button
   background: rgba(255, 255, 255, 0.1);
   color: white;
   transition: background 0.3s ease;
+  min-width: 0;
 }
 .add-friend input[type="text"]::placeholder {
   color: #ddd;
@@ -600,6 +602,7 @@ button
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  flex-shrink: 0;
 }
 .add-friend button:disabled {
   background-color: #2e5cb8;
