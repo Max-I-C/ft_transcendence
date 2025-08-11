@@ -2,8 +2,10 @@
     "name": "transcendence-frontend",
     "version": "1.0.0",
     "scripts": {
+        "start": "serve -s dist",
         "build": "tsc",
-        "watch": "tsc -w"
+        "watch": "tsc -w",
+        "dev": "tsc -w"
     },
     "devDependencies": {
         "typescript": "^5.0.0"

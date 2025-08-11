@@ -1,76 +1,37 @@
 
 services:
-  mariadb:
-    container_name: mariadb
-    image: mariadb
-    networks:
-      - transcendence
-    build:
-      context: requirements/mariadb
-      dockerfile: Dockerfile
-    env_file : .env
-    volumes:
-      - mariadb:/var/lib/mysql
-    restart: unless-stopped
-    expose:
-      - "3306"
   nginx:
     container_name: nginx
     image: nginx
     build: 
-      context: requirements/nginx
+      context: ./requirements
       dockerfile: Dockerfile
     env_file: .env
     volumes:
-      - frontend:/var/www/html:ro
+      - frontend:/frontend_dist
       - ./requirements/nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./requirements/nginx/conf/fastcgi-php.conf:/etc/nginx/snippets/fastcgi-php.conf:ro
-
     networks:
       - transcendence
     depends_on:
-      - frontend
       - backend
     ports:
-      - "443:443"
+      - "4443:4443"
     restart: on-failure
+    user: root
 
   backend:
     container_name: backend
     build:
-      context: requirements/backend
-      dockerfile: Dockerfile
-    env_file: .env
+      context: ./requirements/backend
     networks:
       - transcendence
-    depends_on:
-      - mariadb
-    ports:
-      - "8000:8000"
-    restart: on-failure
-    
-  frontend:
-    container_name: frontend
-    build:
-      context: requirements/frontend
-      dockerfile: Dockerfile
-    networks:
-      - transcendence
-    volumes:
-      - frontend:/app/dist
-    depends_on:
-      - backend
-    restart: on-failure
+    restart: unless-stopped
+    expose:
+      - "3000"
 
 volumes:
   frontend:
     driver: local
-  mariadb:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/home/misaac-c/data/mariadb'
 
 networks:
  transcendence:

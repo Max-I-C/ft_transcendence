@@ -1,0 +1,507 @@
+
+
+/* style.css */
+:root {
+    --main-color: rgb(238, 216, 205);
+}
+
+@font-face 
+{
+    font-family: 'moonspace'; /* Donne-lui un nom ici */
+    src: url('/views/fonts/moonspace.woff2') format('woff2'),
+         url('/views/fonts/moonspace.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+  
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'moonspace', 'Segoe UI', sans-serif;
+  height: 100vh;
+}
+
+body.home-page {
+  padding-top: 80px;
+  background: linear-gradient(135deg, #1e1e2f, #3a3a60);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+body.auth-page{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('/views/images/background.gif') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.main-container
+{
+    background-color: white;
+    padding: 2rem 3rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    text-align: center;
+}
+
+.welcome-text
+{
+    font-size: 1.8 rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.form-container
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+input[type="text"], 
+input[type="email"],
+input[type="password"]
+{
+    font-family: 'moonspace';
+    padding: 0.8rem 1rem;
+    border: 1px solid #cccc;
+    border: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus
+{
+    border-color: #667eea;
+    outline: none;
+}
+
+button
+{
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn
+{
+    font-family: 'moonspace';
+    background-color: transparent;
+    color: #667eea;
+    margin-top: 0.8rem;
+    border: 2px solid #667eea;
+}
+
+.btn:hover
+{
+    background-color: #667eea;
+    color: white;
+}
+
+/* Définition de l'animation */
+@keyframes backgroundChange {
+    0% {
+        background-color: #d2b6ef; 
+    }
+    25% {
+        background-color: #94e3f5; 
+    }
+    50% {
+        background-color: #aff1ad; 
+    }
+    75% {
+        background-color: #f4cddd; 
+    }
+    100% {
+        background-color: #9df0c7; 
+    }
+}
+
+
+/* Style pour register */
+.error-message
+{
+    color: red;
+    font-size: 0.6rem;
+    margin-left: 1rem;
+    display: flex;
+    justify-content: left;
+}
+
+.success-text
+{
+    font-family: sans-serif;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #ac4ebe;
+}
+
+/* TERMINAL STYLE NAVBAR */
+.terminal-navbar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  background-color: #111;
+  border: 2px solid #684b7a;
+  border-radius: 4px;
+  padding: 0.5rem 2rem;
+  font-family: 'Courier New', monospace;
+  z-index: 1000;
+  box-shadow: 0 0 10px #ffffff77;
+}
+
+/* NAV LINKS */
+.terminal-nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* NAV LINKS STYLE */
+.terminal-nav-links li a {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  transition: background 0.3s, color 0.3s;
+  border-radius: 2px;
+}
+
+/* HOVER EFFECT */
+.terminal-nav-links li a:hover {
+  background-color: #3a3a60;
+  color: #111;
+}
+
+
+
+/* GLASS STYLE APPLE */
+.glass {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    inset 0 0 0.5px rgba(255, 255, 255, 0.3),
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  color: white;
+  width: 300px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass:hover {
+  transform: translateY(-5px);
+  background-color: #4a90e2; /* changement de fond */
+  box-shadow:
+    inset 0 0 1px rgba(255, 255, 255, 0.6),  /* un peu plus lumineux */
+    0 15px 40px rgba(74, 144, 226, 0.6),      /* ombre bleutée */
+    0 6px 8px rgba(74, 144, 226, 0.4);
+  color: #fff;
+}
+
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), transparent);
+  z-index: -1;
+  transition: background 0.3s ease;
+}
+
+.glass:hover::before {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(74, 144, 226, 0.3));
+}
+
+.glass h2 {
+  margin-top: 0;
+}
+
+.glass p {
+  margin: 0.5rem 0;
+}
+
+/* WELCOME BUBBLE */
+.welcome-bubble {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 1.5rem 2rem;
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.profile-header{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-picture {
+	width: 50px;
+	height: 50px;
+	border-radius: 8px;
+	background-color: #ccc; /* couleur par défaut */
+	background-size: cover;
+	background-position: center;
+	border: 2px solid white;
+}
+
+.profile-container{
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.profile-card{
+  position: relative;
+}
+
+.edit-btn{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: white;
+  transition: transform 0.2s;
+}
+
+.edit-btn:hover{
+  transform: scale(1.2);
+}
+
+.stat-card{
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    inset 0 0 0.5px rgba(255, 255, 255, 0.3),
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  color: white;
+
+  /* dimensions adaptatives */
+  width: 60vw;          /* 70% de la largeur de l’écran */
+  max-width: 1200px;    /* limite max pour les grands écrans */
+  height: auto;         /* la hauteur s’adapte au contenu, mais tu peux la forcer */
+
+  /* aspect « pas longue » */
+  min-height: 150px;    /* par exemple : une hauteur minimale courte */
+
+  /* centrage de la carte */
+  margin: 5vh auto;     /* centré horizontalement et un peu d’espace vertical */
+
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  background-color: #4a90e2; /* changement de fond */
+  box-shadow:
+    inset 0 0 1px rgba(255, 255, 255, 0.6),  /* un peu plus lumineux */
+    0 15px 40px rgba(74, 144, 226, 0.6),      /* ombre bleutée */
+    0 6px 8px rgba(74, 144, 226, 0.4);
+  color: #fff;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), transparent);
+  z-index: -1;
+  transition: background 0.3s ease;
+}
+
+.stat-card:hover::before {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(74, 144, 226, 0.3));
+}
+
+.stat-cards {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.game-stat {
+  flex: 1 1 33%;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.game-stat:hover {
+  transform: translateY(-3px);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.match-logs {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.match-logs h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.match-logs ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.match-logs li {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.chart-container {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  text-align: center;
+  color: white;
+}
+
+.donut-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 20px;
+}
+
+.rank-image img {
+	border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.rank-section {
+	display: flex;
+	align-items: center;
+	color: white;
+	padding: 15px;
+	border-radius: 10px;
+	gap: 20px;
+  margin-top: 2rem;
+  background-color: rgba(255, 255, 255, 0.1);
+	/* Plus de background ici */
+}
+
+.current-rank {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.current-rank img {
+	width: 80px;
+}
+
+.rank-label {
+	margin-top: 5px;
+	font-weight: bold;
+}
+
+.score-next {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	border-radius: 8px;
+	gap: 0; /* On enlève l'espace interne */
+}
+
+.score,
+.next-rank {
+	width: 50%;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.score-value {
+	font-size: 2rem;
+	font-weight: bold;
+	color: gold;
+}
+
+.score-label {
+	font-size: 0.9rem;
+}
+
+.separator {
+	width: 2px;
+	background: white;
+	height: 60px;
+}
+
+.next-rank img {
+	width: 80px;
+}
+
+.next-label {
+	margin-top: 5px;
+	font-size: 0.9rem;
+}
+
+.rank-title {
+	font-size: 0.8rem;
+	font-weight: bold;
+	color: #bbb;
+	text-transform: uppercase;
+	margin-bottom: 5px;
+	letter-spacing: 1px;
+}
