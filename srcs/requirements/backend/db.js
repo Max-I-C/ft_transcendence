@@ -44,5 +44,32 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS friendships (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    status TEXT CHECK(status IN ('pending', 'accepted', 'declined')) NOT NULL DEFAULT 'pending',
+    created DATETIME DEFAULT CURRENT_TIMESTAMP, -- date
+
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    sender_id INTERGER,
+    type TEXT,
+    reference_id INTEGER,
+    read INTEGER DEFAULT 0,
+    created DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+`);
+
 
 export { db };

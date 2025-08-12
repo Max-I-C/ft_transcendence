@@ -718,3 +718,121 @@ button
 .glass-conversation p {
   margin: 0.5rem 0;
 }
+
+.pending-requests {
+	position: fixed;
+	top: 70px; /* sous la navbar */
+	left: 20px;
+	width: 220px;
+	background: rgba(255, 255, 255, 0.15);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	border-radius: 15px;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	box-shadow:
+		inset 0 0 0.5px rgba(255, 255, 255, 0.3),
+		0 10px 30px rgba(0, 0, 0, 0.25),
+		0 4px 6px rgba(0, 0, 0, 0.1);
+	padding: 1rem;
+	color: white;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	z-index: 1000;
+}
+
+.pending-requests h3 {
+	margin-top: 0;
+	margin-bottom: 0.5rem;
+	font-weight: 600;
+	font-size: 1.25rem;
+}
+
+.pending-requests ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	max-height: 150px;
+	overflow-y: auto;
+}
+
+.pending-requests li {
+	padding: 8px 10px;
+	margin-bottom: 6px;
+	border-radius: 10px;
+	background: rgba(203, 213, 224, 0.1);
+	cursor: pointer;
+	transition: background 0.3s ease;
+}
+
+.pending-requests li:hover {
+	background: rgba(35, 59, 86, 0.8);
+}
+
+/* Scrollbar personnalisé */
+.pending-requests ul::-webkit-scrollbar {
+	width: 5px;
+}
+.pending-requests ul::-webkit-scrollbar-thumb {
+	background-color: rgba(74,144,226,0.7);
+	border-radius: 3px;
+}
+.pending-requests ul::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.pending-request-item {
+	padding: 8px 10px;
+	margin-bottom: 6px;
+	border-radius: 10px;
+	background: rgba(203, 213, 224, 0.1);
+	cursor: pointer;
+	transition: all 0.3s ease;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.pending-request-item .actions {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0;
+	opacity: 0;
+	max-height: 0;
+	overflow: hidden;
+	transition: all 0.3s ease;
+}
+
+.pending-request-item:hover {
+	background: rgba(35, 59, 86, 0.8);
+	padding-bottom: 12px;
+}
+
+.pending-request-item:hover .actions {
+	opacity: 1;
+	max-height: 40px;
+	margin-top: 8px;
+}
+
+.accept-btn, .decline-btn {
+	padding: 5px 8px;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 0.85rem;
+	transition: background 0.3s ease;
+}
+
+.accept-btn {
+	background: rgba(0, 200, 83, 0.8);
+	color: white;
+}
+.accept-btn:hover {
+	background: rgba(0, 150, 63, 0.9);
+}
+
+.decline-btn {
+	background: rgba(244, 67, 54, 0.8);
+	color: white;
+}
+.decline-btn:hover {
+	background: rgba(200, 50, 45, 0.9);
+}

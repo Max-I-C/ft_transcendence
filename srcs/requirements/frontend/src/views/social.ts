@@ -1,6 +1,57 @@
 import { navigateTo } from '../main.js';
 import { logout } from './auth.js';
 
+interface Notification {
+	id: number;
+	user_id: number;
+	type: string;
+	read: number;
+	created: string;
+	sender_username?: string;
+}
+
+async function loadNotification() {
+	const token = localStorage.getItem('token');
+	try {
+		const res = await fetch('/api/notifications', {
+			headers: { 'Authorization': `Bearer ${token}`}
+		});
+		if(!res.ok)
+			throw new Error('Erreur lors du chargement des notifications');
+		const notifications: Notification[] = await res.json();
+
+		const pendingList = document.getElementById('pending-list');
+		if(!pendingList)
+			return;
+		
+		const pendingRequests = notifications.filter(n => n.type === 'friend_request');
+	
+		pendingList.innerHTML = '';
+		if(pendingRequests.length === 0){
+			pendingList.innerHTML = '<li>Aucune demande</li>';		
+		}
+		else{
+			for(const notif of pendingRequests) {
+				const li = document.createElement('li');
+				li.classList.add('pending-request-item');
+
+				li.innerHTML = `
+					<span>@${notif.sender_username}</span>
+					<div class="actions">
+						<button class="accept-btn">Accept</button>
+						<button class="decline-btn">Refuse</button>
+					</div>
+				`;
+				pendingList.appendChild(li);
+			}
+		}
+	}
+	catch(err){
+		console.error(err);
+	}
+}
+
+
 export function showSocialView() {
 	const app = document.getElementById('app')!;
 	app.innerHTML = `
@@ -13,6 +64,11 @@ export function showSocialView() {
 				<li><a href="#" id="logout-link">⏻</a></li>
 			</ul>
 		</nav>
+		<div id="pending-requests" class="pending-requests glass">
+			<h3>Demande d'amis en attente</h3>
+			<ul id="pending-list" role="list">
+			</ul>
+		</div>
 		<div class="social-container">
     		<section class="friends-column glass" aria-label="Liste des amis">
 				<h2>Mes amis</h2>
@@ -50,6 +106,9 @@ export function showSocialView() {
 		addBtn.disabled = friendInput.value.trim() === '';
 	});
 
+	loadNotification();
+	setInterval(loadNotification, 5000);
+
 	document.querySelector('.add-friend')!.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const token = localStorage.getItem('token');
@@ -63,7 +122,7 @@ export function showSocialView() {
 					'Content-Type': 'application/json',
 					'Authorization': `Bearer ${token}`
 				},
-				body: JSON.stringify({ friendUsername: usernameFriend })
+				body: JSON.stringify({ usernameFriend: usernameFriend })
 			});
 			if(response.ok){
 				alert('Invitation correctement envoyer !');

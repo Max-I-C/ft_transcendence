@@ -188,5 +188,66 @@ fastify.post('/api/simulate-match', { preValidation: [fastify.authenticate] }, a
 })
 
 fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, async (request, reply) => {
-    return {message: 'All good'};
+    const user = request.user;
+    const { usernameFriend } = request.body; 
+    try{
+        const friend = db.prepare(
+            'SELECT id FROM users WHERE username = ? LIMIT 1'
+        ).get(usernameFriend);
+
+        if(!friend){
+            return reply.code(404).send({ message:'User not found' });
+        }
+        
+        const existing = db.prepare(
+            `SELECT * FROM friendships 
+            WHERE (sender_id = ? AND receiver_id = ?) 
+                OR (sender_id = ? AND receiver_id = ?)`
+            ).get(user.id, friend.id, friend.id, user.id);
+
+        if (existing){
+            return reply.code(409).send({ message: 'Friend request already send'});
+        }
+        
+        const friendshipRecord = db.prepare(
+            `INSERT INTO friendships (sender_id, receiver_id, status, created)
+            VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)`
+        ).run(user.id, friend.id);
+
+        const idOfTheFriendshipRecord = friendshipRecord.id;
+
+        db.prepare(
+            `INSERT INTO notifications (user_id, sender_id, type, reference_id, read) VALUES (?, ?, 'friend_request', ?, 0)`
+        ).run(friend.id, user.id, idOfTheFriendshipRecord);
+
+        return reply.code(201).send({message: 'Friend request sent'});        
+    }
+    catch (err){
+        fastify.log.error(err);
+        return reply.code(500).send({ message: 'Server error'});
+    }
+});
+
+fastify.get('/api/notifications', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const notifications = db.prepare(
+        `SELECT n.*, u.username AS sender_username
+        FROM notifications n
+        LEFT JOIN users u ON n.sender_id = u.id
+        WHERE n.user_id = ? AND n.read = 0
+        ORDER BY n.created DESC`
+    ).all(user.id);
+    return(notifications);
+});
+
+fastify.post('/api/notifications/:id/read', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const id = request.params.id;
+
+    const notif = db.prepare('SELECT * FROM notifications WHERE id = ? AND user_id = ?').get(id, user.id);
+    if(!notif)
+        return(reply.code(404).send({ message: 'Notification not found'}));
+    db.prepare('UPDATE notifications SET read = 1 WHERE id = ?').run(id);
+
+    return(reply.send({message: 'Notification mark as read'}));
 });
