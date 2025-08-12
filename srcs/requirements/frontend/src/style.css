@@ -540,7 +540,7 @@ button
 }
 
 .friends-column h2 {
-  margin-top: 0;
+  margin-top: 10%;
   margin-bottom: 1rem;
   font-weight: 600;
   font-size: 1.5rem;
@@ -720,9 +720,6 @@ button
 }
 
 .pending-requests {
-	position: fixed;
-	top: 70px; /* sous la navbar */
-	left: 20px;
 	width: 220px;
 	background: rgba(255, 255, 255, 0.15);
 	backdrop-filter: blur(20px) saturate(180%);
@@ -733,7 +730,6 @@ button
 		inset 0 0 0.5px rgba(255, 255, 255, 0.3),
 		0 10px 30px rgba(0, 0, 0, 0.25),
 		0 4px 6px rgba(0, 0, 0, 0.1);
-	padding: 1rem;
 	color: white;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	z-index: 1000;

@@ -45,6 +45,68 @@ async function loadNotification() {
 				pendingList.appendChild(li);
 			}
 		}
+
+		document.querySelectorAll('.accept-btn').forEach(btn => {
+			btn.addEventListener('click', async (e) => {
+				const button = e.currentTarget as HTMLButtonElement;
+				const notifId = button.dataset.id;
+				const username = button.dataset.username;
+
+				if(!notifId || !username)
+					return;
+				try{
+					const res = await fetch('/api/social/accept', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${token}`
+						},
+						body: JSON.stringify({ notificationId: notifId, usernameFriend: username })
+					});
+					if(res.ok){
+						//await loadNotification();
+						//await loadFriendList();
+					}
+					else{
+						alert('Error with accept request to API');
+					}
+				}
+				catch (err){
+					console.error(err);
+					alert('Network Error');
+				}
+			});
+		});
+		document.querySelectorAll('.decline-btn').forEach(btn => {
+			btn.addEventListener('click', async (e) => {
+				const button = e.currentTarget as HTMLButtonElement;
+				const notifId = button.dataset.id;
+
+				if(!notifId) {
+					return;
+				}
+				try{
+					const res = await fetch('/api/social/refuse', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${token}`
+						},
+						body: JSON.stringify({ notificationId: notifId})
+					});
+					if(res.ok) {
+						await loadNotification();
+					}
+					else{
+						alert('Error with accept request to API');
+					}
+				}
+				catch (err) {
+					console.error(err);
+					alert('Network Error');
+				}
+			});
+		});
 	}
 	catch(err){
 		console.error(err);
@@ -64,13 +126,13 @@ export function showSocialView() {
 				<li><a href="#" id="logout-link">⏻</a></li>
 			</ul>
 		</nav>
-		<div id="pending-requests" class="pending-requests glass">
-			<h3>Demande d'amis en attente</h3>
-			<ul id="pending-list" role="list">
-			</ul>
-		</div>
 		<div class="social-container">
     		<section class="friends-column glass" aria-label="Liste des amis">
+				<div id="pending-requests" class="pending-requests glass">
+					<h3>Friends requests</h3>
+					<ul id="pending-list" role="list">
+					</ul>
+				</div>	
 				<h2>Mes amis</h2>
       			<ul class="friends-list" role="list">
         			<li tabindex="0">@Maxence</li>
