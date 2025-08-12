@@ -214,7 +214,7 @@ fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, a
             VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)`
         ).run(user.id, friend.id);
 
-        const idOfTheFriendshipRecord = friendshipRecord.id;
+        const idOfTheFriendshipRecord = friendshipRecord.lastInsertRowid;
 
         db.prepare(
             `INSERT INTO notifications (user_id, sender_id, type, reference_id, read) VALUES (?, ?, 'pending', ?, 0)`
@@ -271,6 +271,7 @@ fastify.post('/api/social/respond', { preValidation: [fastify.authenticate] }, a
             }
 
             const friendshipId = notif.reference_id;
+            console.log('friendshipId:', friendshipId);
             db.prepare(`DELETE FROM notifications WHERE id = ?`).run(notificationId);
             
             if(action === 'accept') {

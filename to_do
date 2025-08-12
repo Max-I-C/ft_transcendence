@@ -26,3 +26,6 @@ Faire attention dans l'update de l'A2F dans le profile sa mets pas a jour
 
 --- 
 Mettre a jour la BDD pour y ajouter friendlist et message
+
+
+Envoyer sur le frontend de celui qui a envoyer la demande aussi le username de celui qui a accepter
