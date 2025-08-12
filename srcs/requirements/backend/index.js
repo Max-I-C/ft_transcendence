@@ -251,3 +251,47 @@ fastify.post('/api/notifications/:id/read', { preValidation: [fastify.authentica
 
     return(reply.send({message: 'Notification mark as read'}));
 });
+
+fastify.post('/api/friend_request/respond', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const { notificationId, action } = request.body;
+
+    if(!notificationId ||!['accept', 'refuse'].includes(action)) {
+        return reply.code(400).send({ message: 'Invalid data' });
+    }
+
+    try {
+        const transaction = db.transaction(() => {
+            const notif = db.prepare(`
+                SELECT * FROM notifications WHERE id = ? AND user_id = ? AND type = 'friend_request'
+            `).get(notificationId, user.id);
+            
+            if (!notif) {
+                throw new Error('Notification not found, strange how did you got that error ?');
+            }
+
+            const friendshipId = notif.reference_id;
+            db.prepare(`DELETE FROM notifications WHERE id = ?`).run(notificationId);
+            
+            if(action === 'accept') {
+                const update = db.prepare(`
+                    UPDATE friendships SET status = 'accepted' WHERE id = ?
+                `).run(friendshipId);
+                
+                if(update.changes === 0) {
+                    throw new Error('No data found in the table friendships');
+                }
+            }
+            // Entrain de coder la partie de refus 
+            else if(action === 'refuse') {
+                db.prepare(`DELETE FROM friendships WHERE id = ?`).run(friendshipId);
+            }
+        });
+        transaction();
+        return( { message: `Friend request successfuly managed`} );
+    }
+    catch(err){
+        console.error(err);
+        return reply.code(404).send({message: err.message});
+    }
+});

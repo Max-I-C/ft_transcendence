@@ -46,22 +46,23 @@ async function loadNotification() {
 			}
 		}
 
-		document.querySelectorAll('.accept-btn').forEach(btn => {
+		document.querySelectorAll('.accept-btn, .refuse-btn').forEach(btn => {
 			btn.addEventListener('click', async (e) => {
 				const button = e.currentTarget as HTMLButtonElement;
 				const notifId = button.dataset.id;
 				const username = button.dataset.username;
+				const action = button.classList.contains('accept-btn') ? 'accept' : 'refuse';
 
 				if(!notifId || !username)
 					return;
 				try{
-					const res = await fetch('/api/social/accept', {
+					const res = await fetch('/api/social/resond', {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
 							'Authorization': `Bearer ${token}`
 						},
-						body: JSON.stringify({ notificationId: notifId, usernameFriend: username })
+						body: JSON.stringify({ notificationId: notifId, action })
 					});
 					if(res.ok){
 						//await loadNotification();
@@ -72,36 +73,6 @@ async function loadNotification() {
 					}
 				}
 				catch (err){
-					console.error(err);
-					alert('Network Error');
-				}
-			});
-		});
-		document.querySelectorAll('.decline-btn').forEach(btn => {
-			btn.addEventListener('click', async (e) => {
-				const button = e.currentTarget as HTMLButtonElement;
-				const notifId = button.dataset.id;
-
-				if(!notifId) {
-					return;
-				}
-				try{
-					const res = await fetch('/api/social/refuse', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${token}`
-						},
-						body: JSON.stringify({ notificationId: notifId})
-					});
-					if(res.ok) {
-						await loadNotification();
-					}
-					else{
-						alert('Error with accept request to API');
-					}
-				}
-				catch (err) {
 					console.error(err);
 					alert('Network Error');
 				}
@@ -134,11 +105,7 @@ export function showSocialView() {
 					</ul>
 				</div>	
 				<h2>Mes amis</h2>
-      			<ul class="friends-list" role="list">
-        			<li tabindex="0">@Maxence</li>
-					<li tabindex="0">@Alice</li>
-					<li tabindex="0">@Bob</li>
-					<li tabindex="0">@Charlie</li>
+      			<ul class="friends-list" role="list" id="friends-list">
       			</ul>
 				<form class="add-friend">
 				 	<input id="friendUsername" type="text" placeholder="Ajouter un ami par username" aria-label="Nom d'utilisateur à ajouter" required />
