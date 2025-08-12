@@ -61,7 +61,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
-    sender_id INTERGER,
+    sender_id INTEGER,
     type TEXT,
     reference_id INTEGER,
     read INTEGER DEFAULT 0,

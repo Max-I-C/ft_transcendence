@@ -10,6 +10,39 @@ interface Notification {
 	sender_username?: string;
 }
 
+async function loadFriendList() {
+	const token = localStorage.getItem('token');
+	if(!token)
+		return ;
+	try {
+		const res = await fetch('/api/social/friends', {
+			headers: { 'Authorization': `Bearer ${token}`}
+		});
+		if (!res.ok)
+			throw new Error('Error in the loading list');
+		const friends: { username: string }[] = await res.json();
+		const friendsList = document.getElementById('friends-list');
+		if(!friendsList)
+			return;
+
+		friendsList.innerHTML = '';
+		if(friends.length === 0){
+			friendsList.innerHTML = '<li>No friends</li>';
+		}
+		else{
+			for(const friend of friends) {
+				const li = document.createElement('li');
+				li.tabIndex = 0;
+				li.textContent = '@' + friend.username;
+				friendsList.appendChild(li);
+			}
+		}
+	}	
+	catch(err){
+		console.error(err);
+	}
+}
+
 async function loadNotification() {
 	const token = localStorage.getItem('token');
 	try {
@@ -24,7 +57,7 @@ async function loadNotification() {
 		if(!pendingList)
 			return;
 		
-		const pendingRequests = notifications.filter(n => n.type === 'friend_request');
+		const pendingRequests = notifications.filter(n => n.type === 'pending');
 	
 		pendingList.innerHTML = '';
 		if(pendingRequests.length === 0){
@@ -38,8 +71,8 @@ async function loadNotification() {
 				li.innerHTML = `
 					<span>@${notif.sender_username}</span>
 					<div class="actions">
-						<button class="accept-btn">Accept</button>
-						<button class="decline-btn">Refuse</button>
+						<button class="accept-btn" data-id="${notif.id}" data-username="${notif.sender_username}">Accept</button>
+        				<button class="refuse-btn" data-id="${notif.id}" data-username="${notif.sender_username}">Refuse</button>
 					</div>
 				`;
 				pendingList.appendChild(li);
@@ -56,7 +89,7 @@ async function loadNotification() {
 				if(!notifId || !username)
 					return;
 				try{
-					const res = await fetch('/api/social/resond', {
+					const res = await fetch('/api/social/respond', {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
@@ -65,8 +98,8 @@ async function loadNotification() {
 						body: JSON.stringify({ notificationId: notifId, action })
 					});
 					if(res.ok){
-						//await loadNotification();
-						//await loadFriendList();
+						await loadNotification();
+						await loadFriendList();
 					}
 					else{
 						alert('Error with accept request to API');
@@ -101,7 +134,7 @@ export function showSocialView() {
     		<section class="friends-column glass" aria-label="Liste des amis">
 				<div id="pending-requests" class="pending-requests glass">
 					<h3>Friends requests</h3>
-					<ul id="pending-list" role="list">
+					<ul class="friends-list" role="list" id="pending-list">
 					</ul>
 				</div>	
 				<h2>Mes amis</h2>

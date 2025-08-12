@@ -808,7 +808,7 @@ button
 	margin-top: 8px;
 }
 
-.accept-btn, .decline-btn {
+.accept-btn, .refuse-btn {
 	padding: 5px 8px;
 	border: none;
 	border-radius: 6px;
@@ -825,10 +825,10 @@ button
 	background: rgba(0, 150, 63, 0.9);
 }
 
-.decline-btn {
+.refuse-btn {
 	background: rgba(244, 67, 54, 0.8);
 	color: white;
 }
-.decline-btn:hover {
+.refuse-btn:hover {
 	background: rgba(200, 50, 45, 0.9);
 }

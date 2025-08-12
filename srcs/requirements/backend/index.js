@@ -217,7 +217,7 @@ fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, a
         const idOfTheFriendshipRecord = friendshipRecord.id;
 
         db.prepare(
-            `INSERT INTO notifications (user_id, sender_id, type, reference_id, read) VALUES (?, ?, 'friend_request', ?, 0)`
+            `INSERT INTO notifications (user_id, sender_id, type, reference_id, read) VALUES (?, ?, 'pending', ?, 0)`
         ).run(friend.id, user.id, idOfTheFriendshipRecord);
 
         return reply.code(201).send({message: 'Friend request sent'});        
@@ -252,7 +252,7 @@ fastify.post('/api/notifications/:id/read', { preValidation: [fastify.authentica
     return(reply.send({message: 'Notification mark as read'}));
 });
 
-fastify.post('/api/friend_request/respond', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+fastify.post('/api/social/respond', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const { notificationId, action } = request.body;
 
@@ -263,7 +263,7 @@ fastify.post('/api/friend_request/respond', { preValidation: [fastify.authentica
     try {
         const transaction = db.transaction(() => {
             const notif = db.prepare(`
-                SELECT * FROM notifications WHERE id = ? AND user_id = ? AND type = 'friend_request'
+                SELECT * FROM notifications WHERE id = ? AND user_id = ? AND type = 'pending'
             `).get(notificationId, user.id);
             
             if (!notif) {
@@ -294,4 +294,17 @@ fastify.post('/api/friend_request/respond', { preValidation: [fastify.authentica
         console.error(err);
         return reply.code(404).send({message: err.message});
     }
+});
+
+fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const friends = db.prepare(`
+        SELECT u.id, u.username
+        FROM friendships f
+        JOIN users u
+            ON (u.id = f.receiver_id AND f.sender_id = ?)
+            OR (u.id = f.sender_id AND f.receiver_id = ?)
+        WHERE f.status = 'accepted'
+   `).all(user.id, user.id);
+    return(friends);
 });
