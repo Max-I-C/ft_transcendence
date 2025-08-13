@@ -169,7 +169,11 @@ export function showSocialView() {
 	});
 
 	loadNotification();
-	setInterval(loadNotification, 5000);
+	loadFriendList();
+	setInterval(() => {
+    	loadNotification();
+    	loadFriendList();
+	}, 5000);
 
 	document.querySelector('.add-friend')!.addEventListener('submit', async (e) => {
 		e.preventDefault();

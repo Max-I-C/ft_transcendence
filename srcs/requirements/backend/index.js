@@ -303,9 +303,11 @@ fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, as
         SELECT u.id, u.username
         FROM friendships f
         JOIN users u
-            ON (u.id = f.receiver_id AND f.sender_id = ?)
-            OR (u.id = f.sender_id AND f.receiver_id = ?)
+            ON (
+                (u.id = f.receiver_id AND f.sender_id = ?)
+                OR (u.id = f.sender_id AND f.receiver_id = ?)
+            )
         WHERE f.status = 'accepted'
-   `).all(user.id, user.id);
+    `).all(user.id, user.id);
     return(friends);
 });
