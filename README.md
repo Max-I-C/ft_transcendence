@@ -3,7 +3,7 @@
 
 ## Roadmap
 
-- Create it in src/.env
+- Create a file in src/ named .env
 
 - Fill it with thoses data (actual version just need to have a empty .env)
 
