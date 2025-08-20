@@ -2,12 +2,32 @@ import Fastify from 'fastify';
 import bcrypt from 'bcrypt';
 import fastifyJwt from '@fastify/jwt';
 import { db } from './db.js';
+import websocket from '@fastify/websocket';
 
 const fastify = Fastify({ logger: true });
 
 fastify.register(fastifyJwt, {
 	secret: 'supersecretkey'
 });
+
+fastify.register(websocket);
+
+fastify.register(async function (fastify) {
+  
+    fastify.get('/*', { websocket: true }, (socket /* WebSocket */, req /* FastifyRequest */) => {
+        socket.on('message', message => {
+            // message.toString() === 'hi from client'
+            socket.send('hi from wildcard route')
+        })
+    })
+
+    fastify.get('/', { websocket: true }, (socket /* WebSocket */, req /* FastifyRequest */) => {
+        socket.on('message', message => {
+            // message.toString() === 'hi from client'
+            socket.send('hi from server')
+        })
+    })
+})
 
 fastify.get('/api/ping', async (request, reply) => 
 {
