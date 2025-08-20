@@ -4,12 +4,18 @@ USER := $(shell whoami)
 
 .PHONY: all up clean fclean re
 
-$(NAME): up
+$(NAME): all
 
-up:
+all:
 		docker-compose -f $(PATH_YML) up --build
 
-all: up
+load_frontend: build-nginx up-nginx
+
+up-%:
+	docker compose -f srcs/docker-compose.yml up $* -d
+
+build-%:
+		docker-compose -f $(PATH_YML) build $*
 
 clean: 
 		docker-compose -f $(PATH_YML) down -v
