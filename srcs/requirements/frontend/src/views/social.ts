@@ -44,8 +44,8 @@ async function loadFriendList() {
 }
 
 async function loadNotification() {
-	const token = localStorage.getItem('token');
 	try {
+		const token = localStorage.getItem('token');
 		const res = await fetch('/api/notifications', {
 			headers: { 'Authorization': `Bearer ${token}`}
 		});
@@ -154,6 +154,32 @@ export function showSocialView() {
   		</div>
 	`;
 
+	const socket = new WebSocket('ws://localhost:3000/ws');
+
+	// Authentifie le socket
+	const token = localStorage.getItem('token');
+	if (token) {
+		socket.addEventListener('open', () => {
+			socket.send(JSON.stringify({ type: 'auth', token }));
+		});
+	}
+
+	socket.addEventListener('message', (event) => {
+		console.log('Raw message from server:', event.data); // <-- voir exactement ce qui arrive
+		try {
+			const msg = JSON.parse(event.data);
+			console.log('Parsed message:', msg);
+			if (msg.type === 'new_friend_request') {
+				loadNotification();
+			}
+		} 
+		catch (err) {
+			console.error('Failed to parse JSON:', err);
+		}
+	});
+
+
+
     document.body.className = 'social-page';
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
 	document.getElementById('profile-link')!.addEventListener('click', () => navigateTo('/profile'));
@@ -170,10 +196,6 @@ export function showSocialView() {
 
 	loadNotification();
 	loadFriendList();
-	setInterval(() => {
-    	loadNotification();
-    	loadFriendList();
-	}, 5000);
 
 	document.querySelector('.add-friend')!.addEventListener('submit', async (e) => {
 		e.preventDefault();
@@ -181,6 +203,15 @@ export function showSocialView() {
 		const usernameFriend = (document.getElementById('friendUsername') as HTMLInputElement).value.trim();
 		
 		if(!usernameFriend) return;
+
+		if (socket.readyState === WebSocket.OPEN) {
+			socket.send(JSON.stringify({
+				type: 'friend_request',
+				to: usernameFriend,
+				token: token // pour que le backend sache qui envoie
+			}));
+		}
+
 		try{
 			const response = await fetch('/api/social/request', { 
 				method: 'POST',

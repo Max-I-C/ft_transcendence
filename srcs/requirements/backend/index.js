@@ -17,14 +17,14 @@ fastify.register(async function (fastify) {
     fastify.get('/*', { websocket: true }, (socket /* WebSocket */, req /* FastifyRequest */) => {
         socket.on('message', message => {
             // message.toString() === 'hi from client'
-            socket.send('hi from wildcard route')
+            //socket.send('hi from wildcard route')
         })
     })
 
     fastify.get('/', { websocket: true }, (socket /* WebSocket */, req /* FastifyRequest */) => {
         socket.on('message', message => {
             // message.toString() === 'hi from client'
-            socket.send('hi from server')
+            //socket.send('hi from server')
         })
     })
 })
@@ -330,4 +330,59 @@ fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, as
         WHERE f.status = 'accepted'
     `).all(user.id, user.id);
     return(friends);
+});
+
+const connectedUsers = new Map();
+
+fastify.register(async function (fastify) {
+  fastify.get('/ws', { websocket: true }, (socket, req) => {
+    let currentUser = null;
+
+    socket.on('message', async (raw) => {
+      try {
+        const msg = JSON.parse(raw.toString());
+
+        if (msg.type === 'auth') {
+          // Premier message du client pour s'identifier
+          const payload = fastify.jwt.verify(msg.token);
+          currentUser = payload.username;
+          connectedUsers.set(currentUser, socket);
+          console.log(`User connected: ${currentUser}`);
+        }
+
+        if (msg.type === 'friend_request') {
+          const payload = fastify.jwt.verify(msg.token);
+          console.log(`User ${payload.username} envoie une demande à ${msg.to}`);
+
+          // Save en DB si nécessaire
+          // await db.saveFriendRequest(payload.user_id, msg.to);
+
+          // Ack pour l'envoyeur
+          socket.send(JSON.stringify({
+            type: 'friend_request_ack',
+            to: msg.to,
+            from: payload.username
+          }));
+
+          // Notifier le destinataire si connecté
+          const targetSocket = connectedUsers.get(msg.to);
+          if (targetSocket) {
+            targetSocket.send(JSON.stringify({
+              type: 'new_friend_request',
+              from: payload.username
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('WS error:', err);
+      }
+    });
+
+    socket.on('close', () => {
+      if (currentUser) {
+        connectedUsers.delete(currentUser);
+        console.log(`User disconnected: ${currentUser}`);
+      }
+    });
+  });
 });
