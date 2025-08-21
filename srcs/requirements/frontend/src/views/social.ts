@@ -1,6 +1,8 @@
 import { navigateTo } from '../main.js';
 import { logout } from './auth.js';
 
+let socket : WebSocket;
+
 interface Notification {
 	id: number;
 	user_id: number;
@@ -98,6 +100,14 @@ async function loadNotification() {
 						body: JSON.stringify({ notificationId: notifId, action })
 					});
 					if(res.ok){
+						const usernameFriend = (document.getElementById('friendUsername') as HTMLInputElement).value.trim();
+						if (socket && socket.readyState === WebSocket.OPEN) {
+							socket.send(JSON.stringify({
+								type: 'friend_request_accepted',
+								to: usernameFriend,
+								token: token // pour que le backend sache qui envoie
+							}));
+						}
 						await loadNotification();
 						await loadFriendList();
 					}
@@ -154,7 +164,7 @@ export function showSocialView() {
   		</div>
 	`;
 
-	const socket = new WebSocket('ws://localhost:3000/ws');
+	socket = new WebSocket('ws://localhost:3000/ws');
 
 	// Authentifie le socket
 	const token = localStorage.getItem('token');
@@ -171,6 +181,9 @@ export function showSocialView() {
 			console.log('Parsed message:', msg);
 			if (msg.type === 'new_friend_request') {
 				loadNotification();
+			}
+			if (msg.type === 'new_friend') {
+				loadFriendList();
 			}
 		} 
 		catch (err) {
@@ -204,7 +217,7 @@ export function showSocialView() {
 		
 		if(!usernameFriend) return;
 
-		if (socket.readyState === WebSocket.OPEN) {
+		if (socket && socket.readyState === WebSocket.OPEN) {
 			socket.send(JSON.stringify({
 				type: 'friend_request',
 				to: usernameFriend,

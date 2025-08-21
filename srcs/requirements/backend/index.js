@@ -12,23 +12,6 @@ fastify.register(fastifyJwt, {
 
 fastify.register(websocket);
 
-fastify.register(async function (fastify) {
-  
-    fastify.get('/*', { websocket: true }, (socket /* WebSocket */, req /* FastifyRequest */) => {
-        socket.on('message', message => {
-            // message.toString() === 'hi from client'
-            //socket.send('hi from wildcard route')
-        })
-    })
-
-    fastify.get('/', { websocket: true }, (socket /* WebSocket */, req /* FastifyRequest */) => {
-        socket.on('message', message => {
-            // message.toString() === 'hi from client'
-            //socket.send('hi from server')
-        })
-    })
-})
-
 fastify.get('/api/ping', async (request, reply) => 
 {
     return{ pong: 'it works! '};
@@ -351,29 +334,53 @@ fastify.register(async function (fastify) {
         }
 
         if (msg.type === 'friend_request') {
-          const payload = fastify.jwt.verify(msg.token);
-          console.log(`User ${payload.username} envoie une demande à ${msg.to}`);
+            const payload = fastify.jwt.verify(msg.token);
+            console.log(`User ${payload.username} envoie une demande à ${msg.to}`);
 
-          // Save en DB si nécessaire
-          // await db.saveFriendRequest(payload.user_id, msg.to);
+            // Save en DB si nécessaire
+            // await db.saveFriendRequest(payload.user_id, msg.to);
 
-          // Ack pour l'envoyeur
-          socket.send(JSON.stringify({
-            type: 'friend_request_ack',
-            to: msg.to,
-            from: payload.username
-          }));
-
-          // Notifier le destinataire si connecté
-          const targetSocket = connectedUsers.get(msg.to);
-          if (targetSocket) {
-            targetSocket.send(JSON.stringify({
-              type: 'new_friend_request',
+            // Ack pour l'envoyeur
+            socket.send(JSON.stringify({
+              type: 'friend_request_ack',
+              to: msg.to,
               from: payload.username
             }));
-          }
+
+            // Notifier le destinataire si connecté
+            const targetSocket = connectedUsers.get(msg.to);
+            if (targetSocket) {
+                targetSocket.send(JSON.stringify({
+                  type: 'new_friend_request',
+                  from: payload.username
+                }));
+            }
         }
-      } catch (err) {
+        if (msg.type === 'friend_request_accepted') {
+            const payload = fastify.jwt.verify(msg.token);
+            console.log(`User ${payload.username} demande d'amis accepter ${msg.to}`);
+
+            // Save en DB si nécessaire
+            // await db.saveFriendRequest(payload.user_id, msg.to);
+
+            // Ack pour l'envoyeur
+            socket.send(JSON.stringify({
+              type: 'new_friend',
+              to: msg.to,
+              from: payload.username
+            }));
+
+            // Notifier le destinataire si connecté
+            const targetSocket = connectedUsers.get(msg.to);
+            if (targetSocket) {
+                targetSocket.send(JSON.stringify({
+                  type: 'friend_request_accepted_ack',
+                  from: payload.username
+                }));
+            }
+        }
+      } 
+      catch (err) {
         console.error('WS error:', err);
       }
     });
