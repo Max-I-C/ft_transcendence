@@ -13,7 +13,8 @@ export function showLoginView() {
 					<div id="passError" class="error-message"></div>
 					<button class="btn" type="submit">Connect</button>
 					<button class="btn" type="button" id="register-btn">Register</button>
-					<button class="gsi-material-button">
+					<div class="g-signin2" data-onsuccess="onSignIn"></div>
+					<button class="gsi-material-button" id="cont-google">
 						<div class="gsi-material-button-state"></div>
 						<div class="gsi-material-button-content-wrapper">
 							<div class="gsi-material-button-icon">
@@ -35,7 +36,7 @@ export function showLoginView() {
 	`;
 
     document.body.className = 'auth-page';
-	
+
     document.getElementById('register-btn')!.addEventListener('click', () => {
 		navigateTo('/register');
 	});
@@ -75,4 +76,9 @@ export function showLoginView() {
 			console.error(err);
 		}
 	});
+	  
+	document.getElementById('cont-google')!.addEventListener('click', () => {
+		
+		
+	})
 }
