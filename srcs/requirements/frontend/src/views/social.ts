@@ -100,12 +100,11 @@ async function loadNotification() {
 						body: JSON.stringify({ notificationId: notifId, action })
 					});
 					if(res.ok){
-						const usernameFriend = (document.getElementById('friendUsername') as HTMLInputElement).value.trim();
 						if (socket && socket.readyState === WebSocket.OPEN) {
 							socket.send(JSON.stringify({
 								type: 'friend_request_accepted',
-								to: usernameFriend,
-								token: token // pour que le backend sache qui envoie
+								to: username, // ✅ l'utilisateur à qui on doit notifier la nouvelle amitié
+								token: token
 							}));
 						}
 						await loadNotification();

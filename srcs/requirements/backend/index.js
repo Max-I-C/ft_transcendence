@@ -365,7 +365,7 @@ fastify.register(async function (fastify) {
 
             // Ack pour l'envoyeur
             socket.send(JSON.stringify({
-              type: 'new_friend',
+              type: 'friend_request_accepted_ack',
               to: msg.to,
               from: payload.username
             }));
@@ -374,7 +374,7 @@ fastify.register(async function (fastify) {
             const targetSocket = connectedUsers.get(msg.to);
             if (targetSocket) {
                 targetSocket.send(JSON.stringify({
-                  type: 'friend_request_accepted_ack',
+                  type: 'new_friend',
                   from: payload.username
                 }));
             }
