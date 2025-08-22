@@ -19,17 +19,23 @@ function setupFriendClickHandlers() {
 	if (!friendsList || !chatSection) return;
 
 	friendsList.querySelectorAll('li').forEach(li => {
-		li.addEventListener('click', () => {
-			const username = li.textContent;
+		li.addEventListener('click', async () => {
+			const username = li.textContent?.replace('@', '') || "";
+			const friendId = li.dataset.id;
+			const token = localStorage.getItem('token');
 
-			// On remplace le contenu par une zone de chat
+			if(!friendId || !token) return;
+			const res = await fetch(`/api/messages/${friendId}`, {
+    			headers: { 'Authorization': `Bearer ${token}` }
+  			});
+			console.log('HTTP status:', res.status);
+			const messages = await res.json();
+			console.log('messages:', messages);
+
 			chatSection.innerHTML = `
 				<h2>Conversation avec ${username}</h2>
 				<div class="chat-window">
-					<ul id="chat-messages" class="chat-messages">
-						<li class="message received">@${username} : Salut 👋</li>
-						<li class="message sent">Moi : Hey, ça va ?</li>
-					</ul>
+					<ul id="chat-messages" class="chat-messages" data-friend-id="${friendId}"></ul>
 				</div>
 				<form id="chat-form" class="chat-form">
 					<input type="text" id="chat-input" placeholder="Écris un message..." required />
@@ -37,21 +43,46 @@ function setupFriendClickHandlers() {
 				</form>
 			`;
 
+			const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
+			for(const msg of messages) {
+				const liMsg = document.createElement('li');
+				liMsg.classList.add('message', msg.sender_username === username ? 'received' : 'sent');
+				liMsg.textContent = `${msg.sender_username}: ${msg.content}`;
+				chatMessages.appendChild(liMsg);
+			}
+
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+
 			// gestion du form (mock pour l’instant)
 			const chatForm = document.getElementById('chat-form') as HTMLFormElement;
 			const chatInput = document.getElementById('chat-input') as HTMLInputElement;
-			const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
 
-			chatForm.addEventListener('submit', (e) => {
+			chatForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const text = chatInput.value.trim();
 				if (!text) return;
-				const li = document.createElement('li');
-				li.classList.add('message', 'sent');
-				li.textContent = `Moi : ${text}`;
-				chatMessages.appendChild(li);
-				chatInput.value = '';
-				chatMessages.scrollTop = chatMessages.scrollHeight; // auto-scroll
+
+				// API/WEBSOCKET //
+				const res = await fetch('/api/messages', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ toUserId: friendId, content: text})
+				});
+				// API/WEBSOCKET //
+				
+				if(res.ok){
+					const msg = await res.json();
+					
+					const li = document.createElement('li');
+					li.classList.add('message', 'sent');
+					li.textContent = `Moi : ${msg.content}`;
+					chatMessages.appendChild(li);
+					chatInput.value = '';
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+				}
 			});
 		});
 	});
@@ -68,7 +99,7 @@ async function loadFriendList() {
 		});
 		if (!res.ok)
 			throw new Error('Error in the loading list');
-		const friends: { username: string }[] = await res.json();
+		const friends: { id: number; username: string }[] = await res.json();
 		const friendsList = document.getElementById('friends-list');
 		if(!friendsList)
 			return;
@@ -82,6 +113,7 @@ async function loadFriendList() {
 				const li = document.createElement('li');
 				li.tabIndex = 0;
 				li.textContent = '@' + friend.username;
+				li.dataset.id = String(friend.id);
 				friendsList.appendChild(li);
 			}
 		}
@@ -230,6 +262,17 @@ export function showSocialView() {
 			}
 			if (msg.type === 'new_friend') {
 				loadFriendList();
+			}
+			if (msg.type === 'new_message') {
+            	const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
+            
+				if (chatMessages && chatMessages.dataset.friendId === String(msg.message.sender_id)) {
+					const li = document.createElement('li');
+					li.classList.add('message', 'received');
+					li.textContent = `@${msg.message.sender_username}: ${msg.message.content}`;
+					chatMessages.appendChild(li);
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+				}
 			}
 		} 
 		catch (err) {

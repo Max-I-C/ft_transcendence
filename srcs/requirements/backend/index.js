@@ -4,6 +4,8 @@ import fastifyJwt from '@fastify/jwt';
 import { db } from './db.js';
 import websocket from '@fastify/websocket';
 
+const connectedUsers = new Map();
+
 const fastify = Fastify({ logger: true });
 
 fastify.register(fastifyJwt, {
@@ -300,6 +302,61 @@ fastify.post('/api/social/respond', { preValidation: [fastify.authenticate] }, a
     }
 });
 
+fastify.get('/api/messages/:friendId', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const friendId = parseInt(request.params.friendId,10);
+    
+    if(isNaN(friendId)) {
+        return reply.code(400).send({message: 'Invalid friend ID'});
+    }
+    const stmt = db.prepare(`
+        SELECT m.*, u.username AS sender_username
+        FROM messages m 
+        JOIN users u ON u.id = m.sender_id
+        WHERE (m.sender_id = ? AND m.receiver_id = ?)
+            OR (m.sender_id = ? AND m.receiver_id = ?)
+        ORDER BY m.created_at ASC
+    `)
+    const messages = stmt.all(user.id, friendId, friendId, user.id);
+
+    return messages;
+});
+
+fastify.post('/api/messages', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const { toUserId, content } = request.body;
+    const fromUserId = request.user.id;
+    const senderUsername = request.user.username; // récupère le username ici
+
+    if (!toUserId || !content) {
+        return reply.code(400).send({ message: 'Missing parameters' });
+    }
+
+    const result = db.prepare(`
+        INSERT INTO messages (sender_id, receiver_id, content, created_at) VALUES (?, ?, ?, ?)
+    `).run(fromUserId, toUserId, content, new Date().toISOString());
+
+    const message = {
+        id: result.lastInsertRowid,
+        sender_id: fromUserId,
+        sender_username: senderUsername,
+        receiver_id: toUserId,
+        content,
+        created_at: new Date().toISOString()
+    };
+
+    // Récupérer username du destinataire
+    const toUser = db.prepare('SELECT username FROM users WHERE id = ?').get(toUserId);
+    if (toUser) {
+        const targetSocket = connectedUsers.get(toUser.username);
+        if (targetSocket) {
+            targetSocket.send(JSON.stringify({ type: 'new_message', message }));
+        }
+    }
+
+    return message;
+});
+
+
 fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const friends = db.prepare(`
@@ -314,8 +371,6 @@ fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, as
     `).all(user.id, user.id);
     return(friends);
 });
-
-const connectedUsers = new Map();
 
 fastify.register(async function (fastify) {
   fastify.get('/ws', { websocket: true }, (socket, req) => {
