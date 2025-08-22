@@ -12,6 +12,52 @@ interface Notification {
 	sender_username?: string;
 }
 
+function setupFriendClickHandlers() {
+	const friendsList = document.getElementById('friends-list');
+	const chatSection = document.querySelector('.chat-bubble') as HTMLElement;
+
+	if (!friendsList || !chatSection) return;
+
+	friendsList.querySelectorAll('li').forEach(li => {
+		li.addEventListener('click', () => {
+			const username = li.textContent;
+
+			// On remplace le contenu par une zone de chat
+			chatSection.innerHTML = `
+				<h2>Conversation avec ${username}</h2>
+				<div class="chat-window">
+					<ul id="chat-messages" class="chat-messages">
+						<li class="message received">@${username} : Salut 👋</li>
+						<li class="message sent">Moi : Hey, ça va ?</li>
+					</ul>
+				</div>
+				<form id="chat-form" class="chat-form">
+					<input type="text" id="chat-input" placeholder="Écris un message..." required />
+					<button type="submit">Envoyer</button>
+				</form>
+			`;
+
+			// gestion du form (mock pour l’instant)
+			const chatForm = document.getElementById('chat-form') as HTMLFormElement;
+			const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+			const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
+
+			chatForm.addEventListener('submit', (e) => {
+				e.preventDefault();
+				const text = chatInput.value.trim();
+				if (!text) return;
+				const li = document.createElement('li');
+				li.classList.add('message', 'sent');
+				li.textContent = `Moi : ${text}`;
+				chatMessages.appendChild(li);
+				chatInput.value = '';
+				chatMessages.scrollTop = chatMessages.scrollHeight; // auto-scroll
+			});
+		});
+	});
+}
+
+
 async function loadFriendList() {
 	const token = localStorage.getItem('token');
 	if(!token)
@@ -39,6 +85,7 @@ async function loadFriendList() {
 				friendsList.appendChild(li);
 			}
 		}
+		setupFriendClickHandlers();
 	}	
 	catch(err){
 		console.error(err);
@@ -71,7 +118,7 @@ async function loadNotification() {
 				li.classList.add('pending-request-item');
 
 				li.innerHTML = `
-					<span>@${notif.sender_username}</span>
+					<span>${notif.sender_username}</span>
 					<div class="actions">
 						<button class="accept-btn" data-id="${notif.id}" data-username="${notif.sender_username}">Accept</button>
         				<button class="refuse-btn" data-id="${notif.id}" data-username="${notif.sender_username}">Refuse</button>

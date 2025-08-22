@@ -637,6 +637,63 @@ button
   padding: 2rem;
 }
 
+.chat-window {
+	height: 100%;
+	overflow-y: auto;
+	background: rgba(0,0,0,0.1);
+	padding: 10px;
+	border-radius: 10px;
+	margin-bottom: 10px;
+}
+
+.chat-messages {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.message {
+	padding: 6px 10px;
+	margin: 5px 0;
+	border-radius: 10px;
+	max-width: 70%;
+}
+
+.message.sent {
+	background: #4cafef;
+	color: white;
+	margin-left: auto;
+	text-align: right;
+}
+
+.message.received {
+	background: #e0e0e0;
+	color: black;
+	margin-right: auto;
+	text-align: left;
+}
+
+.chat-form {
+	display: flex;
+	gap: 10px;
+}
+
+.chat-form input {
+	flex: 1;
+	padding: 8px;
+	border-radius: 10px;
+	border: 1px solid #ccc;
+}
+
+.chat-form button {
+	padding: 8px 12px;
+	border: none;
+	border-radius: 10px;
+	background: #4cafef;
+	color: white;
+	cursor: pointer;
+}
+
 /* Scrollbar custom */
 .friends-list::-webkit-scrollbar {
   width: 6px;
