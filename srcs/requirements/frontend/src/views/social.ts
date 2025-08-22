@@ -224,7 +224,17 @@ export function showSocialView() {
 					<h3>Friends requests</h3>
 					<ul class="friends-list" role="list" id="pending-list">
 					</ul>
-				</div>	
+				</div>
+				
+				<div id="context-menu" class="context-menu hidden">
+					<ul>
+						<li id="profile-action">👤 See profile</li>
+						<li id="invite-action">🎮 Invite to play</li>
+						<li id="block-action">🚫 Block</li>
+						<li id="remove-action">❌ Delete</li>
+					</ul>
+				</div>
+
 				<h2>Mes amis</h2>
       			<ul class="friends-list" role="list" id="friends-list">
       			</ul>
