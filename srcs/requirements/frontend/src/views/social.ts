@@ -2,6 +2,9 @@ import { navigateTo } from '../main.js';
 import { logout } from './auth.js';
 
 let socket : WebSocket;
+let currentFriendId: string | null = null;
+let contextMenu: HTMLDivElement;
+
 
 interface Notification {
 	id: number;
@@ -114,6 +117,14 @@ async function loadFriendList() {
 				li.tabIndex = 0;
 				li.textContent = '@' + friend.username;
 				li.dataset.id = String(friend.id);
+				li.addEventListener('contextmenu', (e) => {
+					e.preventDefault();
+					currentFriendId = li.dataset.id || null;
+
+					contextMenu.style.top = `${e.pageY + 5}px`;
+					contextMenu.style.left = `${e.pageX + 5}px`;
+					contextMenu.classList.remove('hidden');
+				});
 				friendsList.appendChild(li);
 			}
 		}
@@ -225,16 +236,6 @@ export function showSocialView() {
 					<ul class="friends-list" role="list" id="pending-list">
 					</ul>
 				</div>
-				
-				<div id="context-menu" class="context-menu hidden">
-					<ul>
-						<li id="profile-action">👤 See profile</li>
-						<li id="invite-action">🎮 Invite to play</li>
-						<li id="block-action">🚫 Block</li>
-						<li id="remove-action">❌ Delete</li>
-					</ul>
-				</div>
-
 				<h2>Mes amis</h2>
       			<ul class="friends-list" role="list" id="friends-list">
       			</ul>
@@ -250,6 +251,14 @@ export function showSocialView() {
       			</div>
     		</section>
   		</div>
+		<div id="context-menu" class="context-menu hidden">
+			<ul>
+				<li id="profile-action">👤 See profile</li>
+				<li id="invite-action">🎮 Invite to play</li>
+				<li id="block-action">🚫 Block</li>
+				<li id="remove-action">❌ Delete</li>
+			</ul>
+		</div>
 	`;
 
 	socket = new WebSocket('ws://localhost:3000/ws');
@@ -290,6 +299,23 @@ export function showSocialView() {
 		}
 	});
 
+	contextMenu = document.getElementById('context-menu') as HTMLDivElement;
+	document.addEventListener('click', () =>  {
+		contextMenu.classList.add('hidden');
+	});
+
+	document.getElementById('profile-action')?.addEventListener('click', () => {
+		if(currentFriendId) console.log("See profile :", currentFriendId);
+	});
+	document.getElementById('invite-action')?.addEventListener('click', () => {
+		if(currentFriendId) console.log("Invite to play :", currentFriendId);
+	});
+	document.getElementById('block-action')?.addEventListener('click', () => {
+		if(currentFriendId) console.log("Block :", currentFriendId);
+	});
+	document.getElementById('remove-action')?.addEventListener('click', () => {
+		if(currentFriendId) console.log("Delete :", currentFriendId);
+	});
 
 
     document.body.className = 'social-page';
