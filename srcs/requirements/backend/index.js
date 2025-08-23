@@ -203,7 +203,17 @@ fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, a
         if(!friend){
             return reply.code(404).send({ message:'User not found' });
         }
-        
+
+        const blocked = db.prepare(`
+            SELECT 1 FROM blocks 
+            WHERE (blocker_id = ? AND blocked_id = ?)
+                OR (blocker_id = ? AND blocked_id = ?)
+        `).get(user.id, friend.id, friend.id, user.id);
+
+        if (blocked) {
+            return reply.code(403).send({ message: 'Impossible, utilisateur bloqué' });
+        }
+
         const existing = db.prepare(
             `SELECT * FROM friendships 
             WHERE (sender_id = ? AND receiver_id = ?) 
@@ -385,6 +395,28 @@ fastify.delete('/api/social/remove', { preValidation: [fastify.authenticate] }, 
             (sender_id = ? AND receiver_id = ? AND status = 'accepted')
             OR (sender_id = ? AND receiver_id = ? AND status = 'accepted')
     `).run(user.id, friendId, friendId, user.id);
+});
+
+fastify.post('/api/social/block', { preValidation: [fastify.authenticate]}, async (request, reply) => {
+    const user = request.user;
+    const { blockedId } = request.body;
+
+    if(!blockedId ||isNaN(blockedId)) {
+        return reply.code(400).send({message: 'Invalid user ID'});
+    }
+
+    try{
+        const stmt = db.prepare(`
+            INSERT OR IGNORE INTO blocks (blocker_id, blocked_id)
+            VALUES (?, ?)
+        `);
+        stmt.run(user.id, blockedId);
+        return reply.send({success: true, message: 'Utilisateur bloqué'});
+    }
+    catch(err) {
+        return reply.code(500).send({message: 'Erreur lors du blocage'});
+    }
+
 });
 
 fastify.register(async function (fastify) {

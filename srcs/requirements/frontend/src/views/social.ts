@@ -310,8 +310,25 @@ export function showSocialView() {
 	document.getElementById('invite-action')?.addEventListener('click', () => {
 		if(currentFriendId) console.log("Invite to play :", currentFriendId);
 	});
-	document.getElementById('block-action')?.addEventListener('click', () => {
-		if(currentFriendId) console.log("Block :", currentFriendId);
+	document.getElementById('block-action')?.addEventListener('click', async () => {
+		if(currentFriendId) {
+			console.log("Block :", currentFriendId);
+			const res = await fetch(`/api/social/block`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({blockedId: currentFriendId})
+			});
+			if(res.ok){
+				await loadFriendList();
+				alert('Utilisateur bloquer');
+			}
+			else{
+				alert('Erreur lors du bloquage de l ami');
+			}
+		}
 	});
 	document.getElementById('remove-action')?.addEventListener('click', async () => {
 		if(currentFriendId) console.log("Delete :", currentFriendId);
