@@ -313,8 +313,21 @@ export function showSocialView() {
 	document.getElementById('block-action')?.addEventListener('click', () => {
 		if(currentFriendId) console.log("Block :", currentFriendId);
 	});
-	document.getElementById('remove-action')?.addEventListener('click', () => {
+	document.getElementById('remove-action')?.addEventListener('click', async () => {
 		if(currentFriendId) console.log("Delete :", currentFriendId);
+		const res = await fetch(`/api/social/remove?friendId=${currentFriendId}`, {
+			method: 'DELETE',
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
+		if(res.ok){
+			await loadFriendList();
+			alert('Ami supprimé');
+		}
+		else{
+			alert('Erreur lors de la suppression de l ami');
+		}
 	});
 
 

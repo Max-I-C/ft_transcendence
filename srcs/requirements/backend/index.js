@@ -372,6 +372,21 @@ fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, as
     return(friends);
 });
 
+fastify.delete('/api/social/remove', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const friendId = parseInt(request.query.friendId, 10);  
+
+    if (isNaN(friendId)) {
+        return reply.code(400).send({ message: 'Invalid friend ID' });
+    }
+    const del = db.prepare(`
+        DELETE FROM friendships 
+        WHERE 
+            (sender_id = ? AND receiver_id = ? AND status = 'accepted')
+            OR (sender_id = ? AND receiver_id = ? AND status = 'accepted')
+    `).run(user.id, friendId, friendId, user.id);
+});
+
 fastify.register(async function (fastify) {
   fastify.get('/ws', { websocket: true }, (socket, req) => {
     let currentUser = null;
