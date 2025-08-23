@@ -275,13 +275,12 @@ fastify.post('/api/messages', { preValidation: [fastify.authenticate] }, async (
         created_at: new Date().toISOString()
     };
 
+    // Après insertion du message
     // Récupérer username du destinataire
-    const toUser = db.prepare('SELECT username FROM users WHERE id = ?').get(toUserId);
-    if (toUser) {
-        const targetSocket = connectedUsers.get(toUser.username);
-        if (targetSocket) {
-            targetSocket.send(JSON.stringify({ type: 'new_message', message }));
-        }
+    // Notifier le destinataire par son id (normalisé en string)
+    const targetSocket = connectedUsers.get(String(toUserId));
+    if (targetSocket) {
+        targetSocket.send(JSON.stringify({ type: 'new_message', message }));
     }
 
     return message;
@@ -494,7 +493,7 @@ fastify.register(async function (fastify) {
                  }));
              }
         }
-        if (msg.type === 'friend_blocked') {
+        if (msg.type === 'friend_remove_blocked') {
             const payload = fastify.jwt.verify(msg.token);
             console.log(`User ${payload.username} has been blocked [WEBSOCKET]`);
             

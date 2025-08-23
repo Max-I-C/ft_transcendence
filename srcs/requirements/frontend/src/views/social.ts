@@ -49,8 +49,9 @@ function setupFriendClickHandlers() {
 			const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
 			for(const msg of messages) {
 				const liMsg = document.createElement('li');
-				liMsg.classList.add('message', msg.sender_username === username ? 'received' : 'sent');
-				liMsg.textContent = `${msg.sender_username}: ${msg.content}`;
+				const isReceived = msg.sender_username === username;
+				liMsg.classList.add('message', isReceived ? 'received' : 'sent');
+				liMsg.textContent = isReceived ? `@${msg.sender_username}: ${msg.content}` : `Moi : ${msg.content}`;
 				chatMessages.appendChild(liMsg);
 			}
 
@@ -354,6 +355,13 @@ export function showSocialView() {
 		if(res.ok){
 			await loadFriendList();
 			alert('Ami supprimé');
+			if (socket && socket.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify({
+					type: 'friend_remove_blocked',
+					to: currentFriendId,
+					token: token // pour que le backend sache qui envoie
+				}));
+			}
 		}
 		else{
 			alert('Erreur lors de la suppression de l ami');
