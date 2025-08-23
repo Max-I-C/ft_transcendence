@@ -237,6 +237,22 @@ fastify.get('/api/messages/:friendId', { preValidation: [fastify.authenticate] }
     return messages;
 });
 
+fastify.get('/api/users/id', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const username = request.query.username;
+
+    if (!username) {
+        return reply.code(400).send({ message: 'Username missing' });
+    }
+
+    const user = db.prepare('SELECT id FROM users WHERE username = ? LIMIT 1').get(username);
+    if (!user) {
+        return reply.code(404).send({ message: 'User not found' });
+    }
+
+    return reply.send({ id: user.id });
+});
+
+
 fastify.post('/api/messages', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const { toUserId, content } = request.body;
     const fromUserId = request.user.id;
@@ -435,17 +451,14 @@ fastify.register(async function (fastify) {
         if (msg.type === 'auth') {
           // Premier message du client pour s'identifier
           const payload = fastify.jwt.verify(msg.token);
-          currentUser = payload.username;
-          connectedUsers.set(currentUser, socket);
+          currentUser = String(payload.id);              // normaliser en string
+          connectedUsers.set(currentUser, socket);       // stocke par "id" en string
           console.log(`User connected: ${currentUser}`);
         }
 
         if (msg.type === 'friend_request') {
             const payload = fastify.jwt.verify(msg.token);
             console.log(`User ${payload.username} envoie une demande à ${msg.to}`);
-
-            // Save en DB si nécessaire
-            // await db.saveFriendRequest(payload.user_id, msg.to);
 
             // Ack pour l'envoyeur
             socket.send(JSON.stringify({
@@ -455,36 +468,49 @@ fastify.register(async function (fastify) {
             }));
 
             // Notifier le destinataire si connecté
-            const targetSocket = connectedUsers.get(msg.to);
-            if (targetSocket) {
-                targetSocket.send(JSON.stringify({
-                  type: 'new_friend_request',
-                  from: payload.username
-                }));
-            }
+            const targetSocket = connectedUsers.get(String(msg.to)); // utiliser string key
+             if (targetSocket) {
+                 targetSocket.send(JSON.stringify({
+                   type: 'new_friend_request',
+                   from: payload.username
+                 }));
+             }
         }
         if (msg.type === 'friend_request_accepted') {
             const payload = fastify.jwt.verify(msg.token);
             console.log(`User ${payload.username} demande d'amis accepter ${msg.to}`);
 
-            // Save en DB si nécessaire
-            // await db.saveFriendRequest(payload.user_id, msg.to);
-
-            // Ack pour l'envoyeur
             socket.send(JSON.stringify({
               type: 'friend_request_accepted_ack',
               to: msg.to,
               from: payload.username
             }));
 
-            // Notifier le destinataire si connecté
-            const targetSocket = connectedUsers.get(msg.to);
-            if (targetSocket) {
-                targetSocket.send(JSON.stringify({
-                  type: 'new_friend',
-                  from: payload.username
-                }));
-            }
+            const targetSocket = connectedUsers.get(String(msg.to));
+             if (targetSocket) {
+                 targetSocket.send(JSON.stringify({
+                   type: 'new_friend',
+                   from: payload.username
+                 }));
+             }
+        }
+        if (msg.type === 'friend_blocked') {
+            const payload = fastify.jwt.verify(msg.token);
+            console.log(`User ${payload.username} has been blocked [WEBSOCKET]`);
+            
+            socket.send(JSON.stringify({
+                type: 'friend_blocked_ack',
+                to: msg.to,
+                from: payload.username
+            }));
+
+            const targetSocket = connectedUsers.get(String(msg.to));
+             if (targetSocket) {
+                 targetSocket.send(JSON.stringify({
+                   type: 'new_blockage',
+                   from: payload.username
+                 }));
+             }
         }
       } 
       catch (err) {
@@ -494,7 +520,7 @@ fastify.register(async function (fastify) {
 
     socket.on('close', () => {
       if (currentUser) {
-        connectedUsers.delete(currentUser);
+        connectedUsers.delete(currentUser); // currentUser est déjà string
         console.log(`User disconnected: ${currentUser}`);
       }
     });

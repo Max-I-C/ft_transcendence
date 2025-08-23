@@ -190,10 +190,16 @@ async function loadNotification() {
 						body: JSON.stringify({ notificationId: notifId, action })
 					});
 					if(res.ok){
+						const resId = await fetch(`/api/users/id?username=${encodeURIComponent(username)}`, {
+        					headers: { 'Authorization': `Bearer ${token}` }
+    					});
+    					if (!resId.ok) throw new Error('Utilisateur introuvable');
+    					const { id: friendId } = await resId.json();
+						
 						if (socket && socket.readyState === WebSocket.OPEN) {
 							socket.send(JSON.stringify({
 								type: 'friend_request_accepted',
-								to: username, // ✅ l'utilisateur à qui on doit notifier la nouvelle amitié
+								to: friendId, // ✅ l'utilisateur à qui on doit notifier la nouvelle amitié
 								token: token
 							}));
 						}
@@ -279,7 +285,7 @@ export function showSocialView() {
 			if (msg.type === 'new_friend_request') {
 				loadNotification();
 			}
-			if (msg.type === 'new_friend') {
+			if (msg.type === 'new_friend' || msg.type === 'new_blockage') {
 				loadFriendList();
 			}
 			if (msg.type === 'new_message') {
@@ -324,6 +330,13 @@ export function showSocialView() {
 			if(res.ok){
 				await loadFriendList();
 				alert('Utilisateur bloquer');
+				if (socket && socket.readyState === WebSocket.OPEN) {
+					socket.send(JSON.stringify({
+						type: 'friend_remove_blocked',
+						to: currentFriendId,
+						token: token // pour que le backend sache qui envoie
+					}));
+				}
 			}
 			else{
 				alert('Erreur lors du bloquage de l ami');
@@ -372,15 +385,22 @@ export function showSocialView() {
 		
 		if(!usernameFriend) return;
 
-		if (socket && socket.readyState === WebSocket.OPEN) {
-			socket.send(JSON.stringify({
-				type: 'friend_request',
-				to: usernameFriend,
-				token: token // pour que le backend sache qui envoie
-			}));
-		}
-
 		try{
+			const resId = await fetch(`/api/users/id?username=${encodeURIComponent(usernameFriend)}`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			
+			if (!resId.ok) throw new Error('Utilisateur introuvable');
+			const { id: friendId } = await resId.json();
+			
+			if (socket && socket.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify({
+					type: 'friend_request',
+					to: friendId, 
+					token: token
+				}));
+			}
+
 			const response = await fetch('/api/social/request', { 
 				method: 'POST',
 				headers:{
