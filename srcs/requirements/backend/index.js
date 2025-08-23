@@ -406,11 +406,16 @@ fastify.post('/api/social/block', { preValidation: [fastify.authenticate]}, asyn
     }
 
     try{
-        const stmt = db.prepare(`
+        db.prepare(`
             INSERT OR IGNORE INTO blocks (blocker_id, blocked_id)
             VALUES (?, ?)
-        `);
-        stmt.run(user.id, blockedId);
+        `).run(user.id, blockedId);
+        
+        db.prepare(`
+            DELETE FROM friendships
+            WHERE (sender_id = ? AND receiver_id = ?)
+                OR (sender_id = ? AND receiver_id = ?)
+        `).run(user.id, blockedId, blockedId, user.id);
         return reply.send({success: true, message: 'Utilisateur bloqué'});
     }
     catch(err) {
