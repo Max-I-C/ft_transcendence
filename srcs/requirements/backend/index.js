@@ -192,57 +192,6 @@ fastify.post('/api/simulate-match', { preValidation: [fastify.authenticate] }, a
     }
 })
 
-fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, async (request, reply) => {
-    const user = request.user;
-    const { usernameFriend } = request.body; 
-    try{
-        const friend = db.prepare(
-            'SELECT id FROM users WHERE username = ? LIMIT 1'
-        ).get(usernameFriend);
-
-        if(!friend){
-            return reply.code(404).send({ message:'User not found' });
-        }
-
-        const blocked = db.prepare(`
-            SELECT 1 FROM blocks 
-            WHERE (blocker_id = ? AND blocked_id = ?)
-                OR (blocker_id = ? AND blocked_id = ?)
-        `).get(user.id, friend.id, friend.id, user.id);
-
-        if (blocked) {
-            return reply.code(403).send({ message: 'Impossible, utilisateur bloqué' });
-        }
-
-        const existing = db.prepare(
-            `SELECT * FROM friendships 
-            WHERE (sender_id = ? AND receiver_id = ?) 
-                OR (sender_id = ? AND receiver_id = ?)`
-            ).get(user.id, friend.id, friend.id, user.id);
-
-        if (existing){
-            return reply.code(409).send({ message: 'Friend request already send'});
-        }
-        
-        const friendshipRecord = db.prepare(
-            `INSERT INTO friendships (sender_id, receiver_id, status, created)
-            VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)`
-        ).run(user.id, friend.id);
-
-        const idOfTheFriendshipRecord = friendshipRecord.lastInsertRowid;
-
-        db.prepare(
-            `INSERT INTO notifications (user_id, sender_id, type, reference_id, read) VALUES (?, ?, 'pending', ?, 0)`
-        ).run(friend.id, user.id, idOfTheFriendshipRecord);
-
-        return reply.code(201).send({message: 'Friend request sent'});        
-    }
-    catch (err){
-        fastify.log.error(err);
-        return reply.code(500).send({ message: 'Server error'});
-    }
-});
-
 fastify.get('/api/notifications', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const notifications = db.prepare(
@@ -267,50 +216,6 @@ fastify.post('/api/notifications/:id/read', { preValidation: [fastify.authentica
     return(reply.send({message: 'Notification mark as read'}));
 });
 
-fastify.post('/api/social/respond', { preValidation: [fastify.authenticate] }, async (request, reply) => {
-    const user = request.user;
-    const { notificationId, action } = request.body;
-
-    if(!notificationId ||!['accept', 'refuse'].includes(action)) {
-        return reply.code(400).send({ message: 'Invalid data' });
-    }
-
-    try {
-        const transaction = db.transaction(() => {
-            const notif = db.prepare(`
-                SELECT * FROM notifications WHERE id = ? AND user_id = ? AND type = 'pending'
-            `).get(notificationId, user.id);
-            
-            if (!notif) {
-                throw new Error('Notification not found, strange how did you got that error ?');
-            }
-
-            const friendshipId = notif.reference_id;
-            console.log('friendshipId:', friendshipId);
-            db.prepare(`DELETE FROM notifications WHERE id = ?`).run(notificationId);
-            
-            if(action === 'accept') {
-                const update = db.prepare(`
-                    UPDATE friendships SET status = 'accepted' WHERE id = ?
-                `).run(friendshipId);
-                
-                if(update.changes === 0) {
-                    throw new Error('No data found in the table friendships');
-                }
-            }
-            // Entrain de coder la partie de refus 
-            else if(action === 'refuse') {
-                db.prepare(`DELETE FROM friendships WHERE id = ?`).run(friendshipId);
-            }
-        });
-        transaction();
-        return( { message: `Friend request successfuly managed`} );
-    }
-    catch(err){
-        console.error(err);
-        return reply.code(404).send({message: err.message});
-    }
-});
 
 fastify.get('/api/messages/:friendId', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
@@ -366,6 +271,101 @@ fastify.post('/api/messages', { preValidation: [fastify.authenticate] }, async (
     return message;
 });
 
+fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const { usernameFriend } = request.body; 
+    try{
+        const friend = db.prepare(
+            'SELECT id FROM users WHERE username = ? LIMIT 1'
+        ).get(usernameFriend);
+
+        if(!friend){
+            return reply.code(404).send({ message:'User not found' });
+        }
+
+        const blocked = db.prepare(`
+            SELECT 1 FROM blocks 
+            WHERE (blocker_id = ? AND blocked_id = ?)
+                OR (blocker_id = ? AND blocked_id = ?)
+        `).get(user.id, friend.id, friend.id, user.id);
+
+        if (blocked) {
+            return reply.code(403).send({ message: 'Impossible, utilisateur bloqué' });
+        }
+
+        const existing = db.prepare(
+            `SELECT * FROM friendships 
+            WHERE (sender_id = ? AND receiver_id = ?) 
+                OR (sender_id = ? AND receiver_id = ?)`
+            ).get(user.id, friend.id, friend.id, user.id);
+
+        if (existing){
+            return reply.code(409).send({ message: 'Friend request already send'});
+        }
+        
+        const friendshipRecord = db.prepare(
+            `INSERT INTO friendships (sender_id, receiver_id, status, created)
+            VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)`
+        ).run(user.id, friend.id);
+
+        const idOfTheFriendshipRecord = friendshipRecord.lastInsertRowid;
+
+        db.prepare(
+            `INSERT INTO notifications (user_id, sender_id, type, reference_id, read) VALUES (?, ?, 'pending', ?, 0)`
+        ).run(friend.id, user.id, idOfTheFriendshipRecord);
+
+        return reply.code(201).send({message: 'Friend request sent'});        
+    }
+    catch (err){
+        fastify.log.error(err);
+        return reply.code(500).send({ message: 'Server error'});
+    }
+});
+
+fastify.post('/api/social/respond', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const { notificationId, action } = request.body;
+
+    if(!notificationId ||!['accept', 'refuse'].includes(action)) {
+        return reply.code(400).send({ message: 'Invalid data' });
+    }
+
+    try {
+        const transaction = db.transaction(() => {
+            const notif = db.prepare(`
+                SELECT * FROM notifications WHERE id = ? AND user_id = ? AND type = 'pending'
+            `).get(notificationId, user.id);
+            
+            if (!notif) {
+                throw new Error('Notification not found, strange how did you got that error ?');
+            }
+
+            const friendshipId = notif.reference_id;
+            console.log('friendshipId:', friendshipId);
+            db.prepare(`DELETE FROM notifications WHERE id = ?`).run(notificationId);
+            
+            if(action === 'accept') {
+                const update = db.prepare(`
+                    UPDATE friendships SET status = 'accepted' WHERE id = ?
+                `).run(friendshipId);
+                
+                if(update.changes === 0) {
+                    throw new Error('No data found in the table friendships');
+                }
+            }
+            // Entrain de coder la partie de refus 
+            else if(action === 'refuse') {
+                db.prepare(`DELETE FROM friendships WHERE id = ?`).run(friendshipId);
+            }
+        });
+        transaction();
+        return( { message: `Friend request successfuly managed`} );
+    }
+    catch(err){
+        console.error(err);
+        return reply.code(404).send({message: err.message});
+    }
+});
 
 fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
