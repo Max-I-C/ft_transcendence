@@ -1,5 +1,3 @@
-
-
 /* style.css */
 :root {
     --main-color: rgb(238, 216, 205);
@@ -938,3 +936,38 @@ button
 }
 
 /* CSS pour le menu clique droit */
+
+.profile-popup {
+  position: absolute;
+  z-index: 1100;
+  width: 260px;
+  background: rgba(20,20,30,0.95);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.profile-popup.hidden {
+  display: none;
+}
+.profile-popup .profile-popup-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.profile-popup h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+.profile-popup .profile-stats p {
+  margin: 6px 0;
+  font-size: 0.95rem;
+  color: #ddd;
+}

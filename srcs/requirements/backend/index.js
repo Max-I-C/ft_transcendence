@@ -449,6 +449,28 @@ fastify.post('/api/social/block', { preValidation: [fastify.authenticate]}, asyn
 
 });
 
+// NEW: endpoint to get public profile by id (requires auth)
+fastify.get('/api/users/profile/:id', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const requester = request.user;
+    const id = parseInt(request.params.id, 10);
+    if (isNaN(id)) {
+        return reply.code(400).send({ message: 'Invalid user id' });
+    }
+
+    const stmt = db.prepare(`
+        SELECT username, game_play, game_win, game_loss, score_total, level
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+    `);
+    const profile = stmt.get(id);
+    if (!profile) {
+        return reply.code(404).send({ message: 'User not found' });
+    }
+
+    return reply.send(profile);
+});
+
 fastify.register(async function (fastify) {
   fastify.get('/ws', { websocket: true }, (socket, req) => {
     let currentUser = null;

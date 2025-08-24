@@ -4,6 +4,8 @@ import { logout } from './auth.js';
 let socket : WebSocket;
 let currentFriendId: string | null = null;
 let contextMenu: HTMLDivElement;
+// NEW: mémoriser la position du dernier click contextuel
+let lastContextClickPos: { x: number; y: number } | null = null;
 
 
 interface Notification {
@@ -144,6 +146,9 @@ async function loadFriendList() {
 					e.preventDefault();
 					currentFriendId = li.dataset.id || null;
 
+					// NEW: save click coordinates for popup positioning
+					lastContextClickPos = { x: e.pageX, y: e.pageY };
+
 					contextMenu.style.top = `${e.pageY + 5}px`;
 					contextMenu.style.left = `${e.pageX + 5}px`;
 					contextMenu.classList.remove('hidden');
@@ -280,6 +285,10 @@ export function showSocialView() {
       			</div>
     		</section>
   		</div>
+
+		<!-- profile popup (hidden by default) -->
+		<div id="profile-popup" class="profile-popup hidden" role="dialog" aria-hidden="true"></div>
+
 		<div id="context-menu" class="context-menu hidden">
 			<ul>
 				<li id="profile-action">👤 See profile</li>
@@ -353,9 +362,88 @@ export function showSocialView() {
 		contextMenu.classList.add('hidden');
 	});
 
-	document.getElementById('profile-action')?.addEventListener('click', () => {
-		if(currentFriendId) console.log("See profile :", currentFriendId);
+	document.getElementById('profile-action')?.addEventListener('click', async () => {
+		if (!currentFriendId) return;
+		const token = localStorage.getItem('token');
+		if (!token) return;
+
+		try {
+			const res = await fetch(`/api/users/profile/${currentFriendId}`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			if (!res.ok) {
+				throw new Error('Unable to fetch profile');
+			}
+			const profile = await res.json();
+			showProfilePopup(profile);
+		} catch (err) {
+			console.error(err);
+			alert('Erreur lors de la récupération du profil');
+		}
+		// hide context menu
+		contextMenu.classList.add('hidden');
 	});
+
+	function showProfilePopup(profile: { username: string; game_play: number; game_win: number; game_loss: number; score_total: number; level: number }) {
+		const popup = document.getElementById('profile-popup') as HTMLDivElement;
+		if (!popup) return;
+		popup.innerHTML = `
+			<div class="profile-popup-inner">
+				<button id="profile-popup-close" class="profile-popup-close">✕</button>
+				<h3>@${profile.username}</h3>
+				<div class="profile-stats">
+					<p>Level: ${profile.level ?? 0}</p>
+					<p>Score total: ${profile.score_total ?? 0}</p>
+					<p>Games played: ${profile.game_play ?? 0}</p>
+					<p>Winrate : ${(((profile.game_play ?? 0) - (profile.game_loss ?? 0)) / (profile.game_play ?? 0) * 100).toFixed(1)}% </p>
+				</div>
+			</div>
+		`;
+
+		if (lastContextClickPos) {
+			const offsetX = 8;
+			const offsetY = 0;
+			const vw = window.innerWidth;
+			const vh = window.innerHeight;
+			const popupW = 260; 
+			const popupH = 180;
+
+			let left = lastContextClickPos.x + offsetX;
+			let top = lastContextClickPos.y + offsetY;
+
+			if (left + popupW > vw) left = Math.max(8, vw - popupW - 8);
+			if (top + popupH > vh) top = Math.max(8, vh - popupH - 8);
+
+			popup.style.left = `${left}px`;
+			popup.style.top = `${top}px`;
+			popup.style.transform = '';
+		}
+
+		popup.classList.remove('hidden');
+		popup.setAttribute('aria-hidden', 'false');
+
+		// close handlers
+		document.getElementById('profile-popup-close')?.addEventListener('click', () => closeProfilePopup());
+		setTimeout(() => { // close on outside click
+			document.addEventListener('click', outsideClickListener);
+		}, 0);
+		function outsideClickListener(e: MouseEvent) {
+			const target = e.target as HTMLElement;
+			if (!popup.contains(target) && !contextMenu.contains(target)) {
+				closeProfilePopup();
+			}
+		}
+		function closeProfilePopup() {
+			popup.classList.add('hidden');
+			popup.setAttribute('aria-hidden', 'true');
+			popup.innerHTML = '';
+			document.removeEventListener('click', outsideClickListener);
+			popup.style.transform = '';
+			// NEW: clear saved click position
+			lastContextClickPos = null;
+		}
+	}
+
 	document.getElementById('invite-action')?.addEventListener('click', () => {
 		if(currentFriendId) console.log("Invite to play :", currentFriendId);
 	});
