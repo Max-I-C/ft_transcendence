@@ -262,6 +262,16 @@ fastify.post('/api/messages', { preValidation: [fastify.authenticate] }, async (
         return reply.code(400).send({ message: 'Missing parameters' });
     }
 
+    const blockExists = db.prepare(`
+        SELECT 1 FROM blocks 
+        WHERE (blocker_id = ? AND blocked_id = ?)
+           OR (blocker_id = ? AND blocked_id = ?)
+        LIMIT 1
+    `).get(toUserId, fromUserId, fromUserId, toUserId);
+    if (blockExists) {
+        return reply.code(403).send({ message: 'Message blocked due to block relationship' });
+    }
+
     const result = db.prepare(`
         INSERT INTO messages (sender_id, receiver_id, content, created_at) VALUES (?, ?, ?, ?)
     `).run(fromUserId, toUserId, content, new Date().toISOString());
@@ -463,7 +473,8 @@ fastify.register(async function (fastify) {
             socket.send(JSON.stringify({
               type: 'friend_request_ack',
               to: msg.to,
-              from: payload.username
+              from: payload.username,
+              from_id: payload.id
             }));
 
             // Notifier le destinataire si connecté
@@ -471,7 +482,8 @@ fastify.register(async function (fastify) {
              if (targetSocket) {
                  targetSocket.send(JSON.stringify({
                    type: 'new_friend_request',
-                   from: payload.username
+                   from: payload.username,
+                   from_id: payload.id
                  }));
              }
         }
@@ -482,14 +494,16 @@ fastify.register(async function (fastify) {
             socket.send(JSON.stringify({
               type: 'friend_request_accepted_ack',
               to: msg.to,
-              from: payload.username
+              from: payload.username,
+              from_id: payload.id
             }));
 
             const targetSocket = connectedUsers.get(String(msg.to));
              if (targetSocket) {
                  targetSocket.send(JSON.stringify({
                    type: 'new_friend',
-                   from: payload.username
+                   from: payload.username,
+                   from_id: payload.id
                  }));
              }
         }
@@ -500,14 +514,16 @@ fastify.register(async function (fastify) {
             socket.send(JSON.stringify({
                 type: 'friend_blocked_ack',
                 to: msg.to,
-                from: payload.username
+                from: payload.username,
+                from_id: payload.id
             }));
 
             const targetSocket = connectedUsers.get(String(msg.to));
              if (targetSocket) {
                  targetSocket.send(JSON.stringify({
                    type: 'new_blockage',
-                   from: payload.username
+                   from: payload.username,
+                   from_id: payload.id
                  }));
              }
         }

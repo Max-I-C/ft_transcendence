@@ -15,6 +15,28 @@ interface Notification {
 	sender_username?: string;
 }
 
+function info_message(message: string) {
+	const chatMessages = document.getElementById('chat-messages') as HTMLUListElement | null;
+	if (chatMessages) {
+		const li = document.createElement('li');
+		li.classList.add('message', 'system');
+		li.textContent = message;
+		chatMessages.appendChild(li);
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		const chatInput = document.getElementById('chat-input') as HTMLInputElement | null;
+		const chatForm = document.getElementById('chat-form') as HTMLFormElement | null;
+		if (chatInput) {
+			chatInput.disabled = true;
+			chatInput.placeholder = 'Envoi désactivé';
+		}
+		if (chatForm) {
+			const sendBtn = chatForm.querySelector('button') as HTMLButtonElement | null;
+			if (sendBtn) sendBtn.disabled = true;
+		}
+	}
+}
+
 function setupFriendClickHandlers() {
 	const friendsList = document.getElementById('friends-list');
 	const chatSection = document.querySelector('.chat-bubble') as HTMLElement;
@@ -289,6 +311,26 @@ export function showSocialView() {
 			if (msg.type === 'new_friend' || msg.type === 'new_blockage') {
 				loadFriendList();
 			}
+			if (msg.type === 'new_blockage') {
+				// Si la conversation ouverte concerne celui qui nous a bloqué,
+				// désactiver l'envoi et afficher un message système.
+				const chatMessages = document.getElementById('chat-messages') as HTMLUListElement | null;
+				if (chatMessages && chatMessages.dataset.friendId === String(msg.from_id)) {
+					const li = document.createElement('li');
+					li.classList.add('message', 'system');
+					li.textContent = `You are no longer in the friends list of @${msg.from}`;
+					chatMessages.appendChild(li);
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+
+					const chatInput = document.getElementById('chat-input') as HTMLInputElement | null;
+					const chatForm = document.getElementById('chat-form') as HTMLFormElement | null;
+					if (chatInput) chatInput.disabled = true;
+					if (chatForm) {
+						const sendBtn = chatForm.querySelector('button') as HTMLButtonElement | null;
+						if (sendBtn) sendBtn.disabled = true;
+					}
+				}
+			}
 			if (msg.type === 'new_message') {
             	const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
             
@@ -338,6 +380,7 @@ export function showSocialView() {
 						token: token // pour que le backend sache qui envoie
 					}));
 				}
+				info_message('User correctly blocked !');
 			}
 			else{
 				alert('Erreur lors du bloquage de l ami');
@@ -362,6 +405,7 @@ export function showSocialView() {
 					token: token // pour que le backend sache qui envoie
 				}));
 			}
+			info_message('User correctly deleted !');
 		}
 		else{
 			alert('Erreur lors de la suppression de l ami');
