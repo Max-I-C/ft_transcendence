@@ -2,12 +2,17 @@ import Fastify from 'fastify';
 import bcrypt from 'bcrypt';
 import fastifyJwt from '@fastify/jwt';
 import { db } from './db.js';
+import websocket from '@fastify/websocket';
+
+const connectedUsers = new Map();
 
 const fastify = Fastify({ logger: true });
 
 fastify.register(fastifyJwt, {
 	secret: 'supersecretkey'
 });
+
+fastify.register(websocket);
 
 fastify.get('/api/ping', async (request, reply) => 
 {
@@ -187,6 +192,110 @@ fastify.post('/api/simulate-match', { preValidation: [fastify.authenticate] }, a
     }
 })
 
+fastify.get('/api/notifications', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const notifications = db.prepare(
+        `SELECT n.*, u.username AS sender_username
+        FROM notifications n
+        LEFT JOIN users u ON n.sender_id = u.id
+        WHERE n.user_id = ? AND n.read = 0
+        ORDER BY n.created DESC`
+    ).all(user.id);
+    return(notifications);
+});
+
+fastify.post('/api/notifications/:id/read', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const id = request.params.id;
+
+    const notif = db.prepare('SELECT * FROM notifications WHERE id = ? AND user_id = ?').get(id, user.id);
+    if(!notif)
+        return(reply.code(404).send({ message: 'Notification not found'}));
+    db.prepare('UPDATE notifications SET read = 1 WHERE id = ?').run(id);
+
+    return(reply.send({message: 'Notification mark as read'}));
+});
+
+
+fastify.get('/api/messages/:friendId', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const friendId = parseInt(request.params.friendId,10);
+    
+    if(isNaN(friendId)) {
+        return reply.code(400).send({message: 'Invalid friend ID'});
+    }
+    const stmt = db.prepare(`
+        SELECT m.*, u.username AS sender_username
+        FROM messages m 
+        JOIN users u ON u.id = m.sender_id
+        WHERE (m.sender_id = ? AND m.receiver_id = ?)
+            OR (m.sender_id = ? AND m.receiver_id = ?)
+        ORDER BY m.created_at ASC
+    `)
+    const messages = stmt.all(user.id, friendId, friendId, user.id);
+
+    return messages;
+});
+
+fastify.get('/api/users/id', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const username = request.query.username;
+
+    if (!username) {
+        return reply.code(400).send({ message: 'Username missing' });
+    }
+
+    const user = db.prepare('SELECT id FROM users WHERE username = ? LIMIT 1').get(username);
+    if (!user) {
+        return reply.code(404).send({ message: 'User not found' });
+    }
+
+    return reply.send({ id: user.id });
+});
+
+
+fastify.post('/api/messages', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const { toUserId, content } = request.body;
+    const fromUserId = request.user.id;
+    const senderUsername = request.user.username; // récupère le username ici
+
+    if (!toUserId || !content) {
+        return reply.code(400).send({ message: 'Missing parameters' });
+    }
+
+    const blockExists = db.prepare(`
+        SELECT 1 FROM blocks 
+        WHERE (blocker_id = ? AND blocked_id = ?)
+           OR (blocker_id = ? AND blocked_id = ?)
+        LIMIT 1
+    `).get(toUserId, fromUserId, fromUserId, toUserId);
+    if (blockExists) {
+        return reply.code(403).send({ message: 'Message blocked due to block relationship' });
+    }
+
+    const result = db.prepare(`
+        INSERT INTO messages (sender_id, receiver_id, content, created_at) VALUES (?, ?, ?, ?)
+    `).run(fromUserId, toUserId, content, new Date().toISOString());
+
+    const message = {
+        id: result.lastInsertRowid,
+        sender_id: fromUserId,
+        sender_username: senderUsername,
+        receiver_id: toUserId,
+        content,
+        created_at: new Date().toISOString()
+    };
+
+    // Après insertion du message
+    // Récupérer username du destinataire
+    // Notifier le destinataire par son id (normalisé en string)
+    const targetSocket = connectedUsers.get(String(toUserId));
+    if (targetSocket) {
+        targetSocket.send(JSON.stringify({ type: 'new_message', message }));
+    }
+
+    return message;
+});
+
 fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const { usernameFriend } = request.body; 
@@ -198,7 +307,17 @@ fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, a
         if(!friend){
             return reply.code(404).send({ message:'User not found' });
         }
-        
+
+        const blocked = db.prepare(`
+            SELECT 1 FROM blocks 
+            WHERE (blocker_id = ? AND blocked_id = ?)
+                OR (blocker_id = ? AND blocked_id = ?)
+        `).get(user.id, friend.id, friend.id, user.id);
+
+        if (blocked) {
+            return reply.code(403).send({ message: 'Impossible, utilisateur bloqué' });
+        }
+
         const existing = db.prepare(
             `SELECT * FROM friendships 
             WHERE (sender_id = ? AND receiver_id = ?) 
@@ -226,30 +345,6 @@ fastify.post('/api/social/request', { preValidation: [fastify.authenticate] }, a
         fastify.log.error(err);
         return reply.code(500).send({ message: 'Server error'});
     }
-});
-
-fastify.get('/api/notifications', { preValidation: [fastify.authenticate] }, async (request, reply) => {
-    const user = request.user;
-    const notifications = db.prepare(
-        `SELECT n.*, u.username AS sender_username
-        FROM notifications n
-        LEFT JOIN users u ON n.sender_id = u.id
-        WHERE n.user_id = ? AND n.read = 0
-        ORDER BY n.created DESC`
-    ).all(user.id);
-    return(notifications);
-});
-
-fastify.post('/api/notifications/:id/read', { preValidation: [fastify.authenticate] }, async (request, reply) => {
-    const user = request.user;
-    const id = request.params.id;
-
-    const notif = db.prepare('SELECT * FROM notifications WHERE id = ? AND user_id = ?').get(id, user.id);
-    if(!notif)
-        return(reply.code(404).send({ message: 'Notification not found'}));
-    db.prepare('UPDATE notifications SET read = 1 WHERE id = ?').run(id);
-
-    return(reply.send({message: 'Notification mark as read'}));
 });
 
 fastify.post('/api/social/respond', { preValidation: [fastify.authenticate] }, async (request, reply) => {
@@ -310,4 +405,161 @@ fastify.get('/api/social/friends', { preValidation: [fastify.authenticate] }, as
         WHERE f.status = 'accepted'
     `).all(user.id, user.id);
     return(friends);
+});
+
+fastify.delete('/api/social/remove', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const user = request.user;
+    const friendId = parseInt(request.query.friendId, 10);  
+
+    if (isNaN(friendId)) {
+        return reply.code(400).send({ message: 'Invalid friend ID' });
+    }
+    const del = db.prepare(`
+        DELETE FROM friendships 
+        WHERE 
+            (sender_id = ? AND receiver_id = ? AND status = 'accepted')
+            OR (sender_id = ? AND receiver_id = ? AND status = 'accepted')
+    `).run(user.id, friendId, friendId, user.id);
+});
+
+fastify.post('/api/social/block', { preValidation: [fastify.authenticate]}, async (request, reply) => {
+    const user = request.user;
+    const { blockedId } = request.body;
+
+    if(!blockedId ||isNaN(blockedId)) {
+        return reply.code(400).send({message: 'Invalid user ID'});
+    }
+
+    try{
+        db.prepare(`
+            INSERT OR IGNORE INTO blocks (blocker_id, blocked_id)
+            VALUES (?, ?)
+        `).run(user.id, blockedId);
+        
+        db.prepare(`
+            DELETE FROM friendships
+            WHERE (sender_id = ? AND receiver_id = ?)
+                OR (sender_id = ? AND receiver_id = ?)
+        `).run(user.id, blockedId, blockedId, user.id);
+        return reply.send({success: true, message: 'Utilisateur bloqué'});
+    }
+    catch(err) {
+        return reply.code(500).send({message: 'Erreur lors du blocage'});
+    }
+
+});
+
+// NEW: endpoint to get public profile by id (requires auth)
+fastify.get('/api/users/profile/:id', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const requester = request.user;
+    const id = parseInt(request.params.id, 10);
+    if (isNaN(id)) {
+        return reply.code(400).send({ message: 'Invalid user id' });
+    }
+
+    const stmt = db.prepare(`
+        SELECT username, game_play, game_win, game_loss, score_total, level
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+    `);
+    const profile = stmt.get(id);
+    if (!profile) {
+        return reply.code(404).send({ message: 'User not found' });
+    }
+
+    return reply.send(profile);
+});
+
+fastify.register(async function (fastify) {
+  fastify.get('/ws', { websocket: true }, (socket, req) => {
+    let currentUser = null;
+
+    socket.on('message', async (raw) => {
+      try {
+        const msg = JSON.parse(raw.toString());
+
+        if (msg.type === 'auth') {
+          // Premier message du client pour s'identifier
+          const payload = fastify.jwt.verify(msg.token);
+          currentUser = String(payload.id);              // normaliser en string
+          connectedUsers.set(currentUser, socket);       // stocke par "id" en string
+          console.log(`User connected: ${currentUser}`);
+        }
+
+        if (msg.type === 'friend_request') {
+            const payload = fastify.jwt.verify(msg.token);
+            console.log(`User ${payload.username} envoie une demande à ${msg.to}`);
+
+            // Ack pour l'envoyeur
+            socket.send(JSON.stringify({
+              type: 'friend_request_ack',
+              to: msg.to,
+              from: payload.username,
+              from_id: payload.id
+            }));
+
+            // Notifier le destinataire si connecté
+            const targetSocket = connectedUsers.get(String(msg.to)); // utiliser string key
+             if (targetSocket) {
+                 targetSocket.send(JSON.stringify({
+                   type: 'new_friend_request',
+                   from: payload.username,
+                   from_id: payload.id
+                 }));
+             }
+        }
+        if (msg.type === 'friend_request_accepted') {
+            const payload = fastify.jwt.verify(msg.token);
+            console.log(`User ${payload.username} demande d'amis accepter ${msg.to}`);
+
+            socket.send(JSON.stringify({
+              type: 'friend_request_accepted_ack',
+              to: msg.to,
+              from: payload.username,
+              from_id: payload.id
+            }));
+
+            const targetSocket = connectedUsers.get(String(msg.to));
+             if (targetSocket) {
+                 targetSocket.send(JSON.stringify({
+                   type: 'new_friend',
+                   from: payload.username,
+                   from_id: payload.id
+                 }));
+             }
+        }
+        if (msg.type === 'friend_remove_blocked') {
+            const payload = fastify.jwt.verify(msg.token);
+            console.log(`User ${payload.username} has been blocked [WEBSOCKET]`);
+            
+            socket.send(JSON.stringify({
+                type: 'friend_blocked_ack',
+                to: msg.to,
+                from: payload.username,
+                from_id: payload.id
+            }));
+
+            const targetSocket = connectedUsers.get(String(msg.to));
+             if (targetSocket) {
+                 targetSocket.send(JSON.stringify({
+                   type: 'new_blockage',
+                   from: payload.username,
+                   from_id: payload.id
+                 }));
+             }
+        }
+      } 
+      catch (err) {
+        console.error('WS error:', err);
+      }
+    });
+
+    socket.on('close', () => {
+      if (currentUser) {
+        connectedUsers.delete(currentUser); // currentUser est déjà string
+        console.log(`User disconnected: ${currentUser}`);
+      }
+    });
+  });
 });

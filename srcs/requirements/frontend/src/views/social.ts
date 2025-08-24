@@ -1,6 +1,13 @@
 import { navigateTo } from '../main.js';
 import { logout } from './auth.js';
 
+let socket : WebSocket;
+let currentFriendId: string | null = null;
+let contextMenu: HTMLDivElement;
+// NEW: mémoriser la position du dernier click contextuel
+let lastContextClickPos: { x: number; y: number } | null = null;
+
+
 interface Notification {
 	id: number;
 	user_id: number;
@@ -9,6 +16,106 @@ interface Notification {
 	created: string;
 	sender_username?: string;
 }
+
+function info_message(message: string) {
+	const chatMessages = document.getElementById('chat-messages') as HTMLUListElement | null;
+	if (chatMessages) {
+		const li = document.createElement('li');
+		li.classList.add('message', 'system');
+		li.textContent = message;
+		chatMessages.appendChild(li);
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+
+		const chatInput = document.getElementById('chat-input') as HTMLInputElement | null;
+		const chatForm = document.getElementById('chat-form') as HTMLFormElement | null;
+		if (chatInput) {
+			chatInput.disabled = true;
+			chatInput.placeholder = 'Envoi désactivé';
+		}
+		if (chatForm) {
+			const sendBtn = chatForm.querySelector('button') as HTMLButtonElement | null;
+			if (sendBtn) sendBtn.disabled = true;
+		}
+	}
+}
+
+function setupFriendClickHandlers() {
+	const friendsList = document.getElementById('friends-list');
+	const chatSection = document.querySelector('.chat-bubble') as HTMLElement;
+
+	if (!friendsList || !chatSection) return;
+
+	friendsList.querySelectorAll('li').forEach(li => {
+		li.addEventListener('click', async () => {
+			const username = li.textContent?.replace('@', '') || "";
+			const friendId = li.dataset.id;
+			const token = localStorage.getItem('token');
+
+			if(!friendId || !token) return;
+			const res = await fetch(`/api/messages/${friendId}`, {
+    			headers: { 'Authorization': `Bearer ${token}` }
+  			});
+			console.log('HTTP status:', res.status);
+			const messages = await res.json();
+			console.log('messages:', messages);
+
+			chatSection.innerHTML = `
+				<h2>Conversation avec ${username}</h2>
+				<div class="chat-window">
+					<ul id="chat-messages" class="chat-messages" data-friend-id="${friendId}"></ul>
+				</div>
+				<form id="chat-form" class="chat-form">
+					<input type="text" id="chat-input" placeholder="Écris un message..." required />
+					<button type="submit">Envoyer</button>
+				</form>
+			`;
+
+			const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
+			for(const msg of messages) {
+				const liMsg = document.createElement('li');
+				const isReceived = msg.sender_username === username;
+				liMsg.classList.add('message', isReceived ? 'received' : 'sent');
+				liMsg.textContent = isReceived ? `@${msg.sender_username}: ${msg.content}` : `Moi : ${msg.content}`;
+				chatMessages.appendChild(liMsg);
+			}
+
+			chatMessages.scrollTop = chatMessages.scrollHeight;
+
+			// gestion du form (mock pour l’instant)
+			const chatForm = document.getElementById('chat-form') as HTMLFormElement;
+			const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+
+			chatForm.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const text = chatInput.value.trim();
+				if (!text) return;
+
+				// API/WEBSOCKET //
+				const res = await fetch('/api/messages', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ toUserId: friendId, content: text})
+				});
+				// API/WEBSOCKET //
+				
+				if(res.ok){
+					const msg = await res.json();
+					
+					const li = document.createElement('li');
+					li.classList.add('message', 'sent');
+					li.textContent = `Moi : ${msg.content}`;
+					chatMessages.appendChild(li);
+					chatInput.value = '';
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+				}
+			});
+		});
+	});
+}
+
 
 async function loadFriendList() {
 	const token = localStorage.getItem('token');
@@ -20,7 +127,7 @@ async function loadFriendList() {
 		});
 		if (!res.ok)
 			throw new Error('Error in the loading list');
-		const friends: { username: string }[] = await res.json();
+		const friends: { id: number; username: string }[] = await res.json();
 		const friendsList = document.getElementById('friends-list');
 		if(!friendsList)
 			return;
@@ -34,9 +141,22 @@ async function loadFriendList() {
 				const li = document.createElement('li');
 				li.tabIndex = 0;
 				li.textContent = '@' + friend.username;
+				li.dataset.id = String(friend.id);
+				li.addEventListener('contextmenu', (e) => {
+					e.preventDefault();
+					currentFriendId = li.dataset.id || null;
+
+					// NEW: save click coordinates for popup positioning
+					lastContextClickPos = { x: e.pageX, y: e.pageY };
+
+					contextMenu.style.top = `${e.pageY + 5}px`;
+					contextMenu.style.left = `${e.pageX + 5}px`;
+					contextMenu.classList.remove('hidden');
+				});
 				friendsList.appendChild(li);
 			}
 		}
+		setupFriendClickHandlers();
 	}	
 	catch(err){
 		console.error(err);
@@ -44,8 +164,8 @@ async function loadFriendList() {
 }
 
 async function loadNotification() {
-	const token = localStorage.getItem('token');
 	try {
+		const token = localStorage.getItem('token');
 		const res = await fetch('/api/notifications', {
 			headers: { 'Authorization': `Bearer ${token}`}
 		});
@@ -69,7 +189,7 @@ async function loadNotification() {
 				li.classList.add('pending-request-item');
 
 				li.innerHTML = `
-					<span>@${notif.sender_username}</span>
+					<span>${notif.sender_username}</span>
 					<div class="actions">
 						<button class="accept-btn" data-id="${notif.id}" data-username="${notif.sender_username}">Accept</button>
         				<button class="refuse-btn" data-id="${notif.id}" data-username="${notif.sender_username}">Refuse</button>
@@ -98,6 +218,19 @@ async function loadNotification() {
 						body: JSON.stringify({ notificationId: notifId, action })
 					});
 					if(res.ok){
+						const resId = await fetch(`/api/users/id?username=${encodeURIComponent(username)}`, {
+        					headers: { 'Authorization': `Bearer ${token}` }
+    					});
+    					if (!resId.ok) throw new Error('Utilisateur introuvable');
+    					const { id: friendId } = await resId.json();
+						
+						if (socket && socket.readyState === WebSocket.OPEN) {
+							socket.send(JSON.stringify({
+								type: 'friend_request_accepted',
+								to: friendId, // ✅ l'utilisateur à qui on doit notifier la nouvelle amitié
+								token: token
+							}));
+						}
 						await loadNotification();
 						await loadFriendList();
 					}
@@ -136,7 +269,7 @@ export function showSocialView() {
 					<h3>Friends requests</h3>
 					<ul class="friends-list" role="list" id="pending-list">
 					</ul>
-				</div>	
+				</div>
 				<h2>Mes amis</h2>
       			<ul class="friends-list" role="list" id="friends-list">
       			</ul>
@@ -152,7 +285,221 @@ export function showSocialView() {
       			</div>
     		</section>
   		</div>
+
+		<!-- profile popup (hidden by default) -->
+		<div id="profile-popup" class="profile-popup hidden" role="dialog" aria-hidden="true"></div>
+
+		<div id="context-menu" class="context-menu hidden">
+			<ul>
+				<li id="profile-action">👤 See profile</li>
+				<li id="invite-action">🎮 Invite to play</li>
+				<li id="block-action">🚫 Block</li>
+				<li id="remove-action">❌ Delete</li>
+			</ul>
+		</div>
 	`;
+
+	socket = new WebSocket('ws://localhost:3000/ws');
+
+	// Authentifie le socket
+	const token = localStorage.getItem('token');
+	if (token) {
+		socket.addEventListener('open', () => {
+			socket.send(JSON.stringify({ type: 'auth', token }));
+		});
+	}
+
+	socket.addEventListener('message', (event) => {
+		console.log('Raw message from server:', event.data); // <-- voir exactement ce qui arrive
+		try {
+			const msg = JSON.parse(event.data);
+			console.log('Parsed message:', msg);
+			if (msg.type === 'new_friend_request') {
+				loadNotification();
+			}
+			if (msg.type === 'new_friend' || msg.type === 'new_blockage') {
+				loadFriendList();
+			}
+			if (msg.type === 'new_blockage') {
+				// Si la conversation ouverte concerne celui qui nous a bloqué,
+				// désactiver l'envoi et afficher un message système.
+				const chatMessages = document.getElementById('chat-messages') as HTMLUListElement | null;
+				if (chatMessages && chatMessages.dataset.friendId === String(msg.from_id)) {
+					const li = document.createElement('li');
+					li.classList.add('message', 'system');
+					li.textContent = `You are no longer in the friends list of @${msg.from}`;
+					chatMessages.appendChild(li);
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+
+					const chatInput = document.getElementById('chat-input') as HTMLInputElement | null;
+					const chatForm = document.getElementById('chat-form') as HTMLFormElement | null;
+					if (chatInput) chatInput.disabled = true;
+					if (chatForm) {
+						const sendBtn = chatForm.querySelector('button') as HTMLButtonElement | null;
+						if (sendBtn) sendBtn.disabled = true;
+					}
+				}
+			}
+			if (msg.type === 'new_message') {
+            	const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
+            
+				if (chatMessages && chatMessages.dataset.friendId === String(msg.message.sender_id)) {
+					const li = document.createElement('li');
+					li.classList.add('message', 'received');
+					li.textContent = `@${msg.message.sender_username}: ${msg.message.content}`;
+					chatMessages.appendChild(li);
+					chatMessages.scrollTop = chatMessages.scrollHeight;
+				}
+			}
+		} 
+		catch (err) {
+			console.error('Failed to parse JSON:', err);
+		}
+	});
+
+	contextMenu = document.getElementById('context-menu') as HTMLDivElement;
+	document.addEventListener('click', () =>  {
+		contextMenu.classList.add('hidden');
+	});
+
+	document.getElementById('profile-action')?.addEventListener('click', async () => {
+		if (!currentFriendId) return;
+		const token = localStorage.getItem('token');
+		if (!token) return;
+
+		try {
+			const res = await fetch(`/api/users/profile/${currentFriendId}`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			if (!res.ok) {
+				throw new Error('Unable to fetch profile');
+			}
+			const profile = await res.json();
+			showProfilePopup(profile);
+		} catch (err) {
+			console.error(err);
+			alert('Erreur lors de la récupération du profil');
+		}
+		// hide context menu
+		contextMenu.classList.add('hidden');
+	});
+
+	function showProfilePopup(profile: { username: string; game_play: number; game_win: number; game_loss: number; score_total: number; level: number }) {
+		const popup = document.getElementById('profile-popup') as HTMLDivElement;
+		if (!popup) return;
+		popup.innerHTML = `
+			<div class="profile-popup-inner">
+				<button id="profile-popup-close" class="profile-popup-close">✕</button>
+				<h3>@${profile.username}</h3>
+				<div class="profile-stats">
+					<p>Level: ${profile.level ?? 0}</p>
+					<p>Score total: ${profile.score_total ?? 0}</p>
+					<p>Games played: ${profile.game_play ?? 0}</p>
+					<p>Winrate : ${(((profile.game_play ?? 0) - (profile.game_loss ?? 0)) / (profile.game_play ?? 0) * 100).toFixed(1)}% </p>
+				</div>
+			</div>
+		`;
+
+		if (lastContextClickPos) {
+			const offsetX = 8;
+			const offsetY = 0;
+			const vw = window.innerWidth;
+			const vh = window.innerHeight;
+			const popupW = 260; 
+			const popupH = 180;
+
+			let left = lastContextClickPos.x + offsetX;
+			let top = lastContextClickPos.y + offsetY;
+
+			if (left + popupW > vw) left = Math.max(8, vw - popupW - 8);
+			if (top + popupH > vh) top = Math.max(8, vh - popupH - 8);
+
+			popup.style.left = `${left}px`;
+			popup.style.top = `${top}px`;
+			popup.style.transform = '';
+		}
+
+		popup.classList.remove('hidden');
+		popup.setAttribute('aria-hidden', 'false');
+
+		// close handlers
+		document.getElementById('profile-popup-close')?.addEventListener('click', () => closeProfilePopup());
+		setTimeout(() => { // close on outside click
+			document.addEventListener('click', outsideClickListener);
+		}, 0);
+		function outsideClickListener(e: MouseEvent) {
+			const target = e.target as HTMLElement;
+			if (!popup.contains(target) && !contextMenu.contains(target)) {
+				closeProfilePopup();
+			}
+		}
+		function closeProfilePopup() {
+			popup.classList.add('hidden');
+			popup.setAttribute('aria-hidden', 'true');
+			popup.innerHTML = '';
+			document.removeEventListener('click', outsideClickListener);
+			popup.style.transform = '';
+			// NEW: clear saved click position
+			lastContextClickPos = null;
+		}
+	}
+
+	document.getElementById('invite-action')?.addEventListener('click', () => {
+		if(currentFriendId) console.log("Invite to play :", currentFriendId);
+	});
+	document.getElementById('block-action')?.addEventListener('click', async () => {
+		if(currentFriendId) {
+			console.log("Block :", currentFriendId);
+			const res = await fetch(`/api/social/block`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({blockedId: currentFriendId})
+			});
+			if(res.ok){
+				await loadFriendList();
+				alert('Utilisateur bloquer');
+				if (socket && socket.readyState === WebSocket.OPEN) {
+					socket.send(JSON.stringify({
+						type: 'friend_remove_blocked',
+						to: currentFriendId,
+						token: token // pour que le backend sache qui envoie
+					}));
+				}
+				info_message('User correctly blocked !');
+			}
+			else{
+				alert('Erreur lors du bloquage de l ami');
+			}
+		}
+	});
+	document.getElementById('remove-action')?.addEventListener('click', async () => {
+		if(currentFriendId) console.log("Delete :", currentFriendId);
+		const res = await fetch(`/api/social/remove?friendId=${currentFriendId}`, {
+			method: 'DELETE',
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
+		if(res.ok){
+			await loadFriendList();
+			alert('Ami supprimé');
+			if (socket && socket.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify({
+					type: 'friend_remove_blocked',
+					to: currentFriendId,
+					token: token // pour que le backend sache qui envoie
+				}));
+			}
+			info_message('User correctly deleted !');
+		}
+		else{
+			alert('Erreur lors de la suppression de l ami');
+		}
+	});
+
 
     document.body.className = 'social-page';
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
@@ -170,10 +517,6 @@ export function showSocialView() {
 
 	loadNotification();
 	loadFriendList();
-	setInterval(() => {
-    	loadNotification();
-    	loadFriendList();
-	}, 5000);
 
 	document.querySelector('.add-friend')!.addEventListener('submit', async (e) => {
 		e.preventDefault();
@@ -181,7 +524,23 @@ export function showSocialView() {
 		const usernameFriend = (document.getElementById('friendUsername') as HTMLInputElement).value.trim();
 		
 		if(!usernameFriend) return;
+
 		try{
+			const resId = await fetch(`/api/users/id?username=${encodeURIComponent(usernameFriend)}`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			
+			if (!resId.ok) throw new Error('Utilisateur introuvable');
+			const { id: friendId } = await resId.json();
+			
+			if (socket && socket.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify({
+					type: 'friend_request',
+					to: friendId, 
+					token: token
+				}));
+			}
+
 			const response = await fetch('/api/social/request', { 
 				method: 'POST',
 				headers:{

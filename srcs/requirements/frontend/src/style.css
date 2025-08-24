@@ -1,5 +1,3 @@
-
-
 /* style.css */
 :root {
     --main-color: rgb(238, 216, 205);
@@ -637,6 +635,63 @@ button
   padding: 2rem;
 }
 
+.chat-window {
+	height: 100%;
+	overflow-y: auto;
+	background: rgba(0,0,0,0.1);
+	padding: 10px;
+	border-radius: 10px;
+	margin-bottom: 10px;
+}
+
+.chat-messages {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.message {
+	padding: 6px 10px;
+	margin: 5px 0;
+	border-radius: 10px;
+	max-width: 70%;
+}
+
+.message.sent {
+	background: #4cafef;
+	color: white;
+	margin-left: auto;
+	text-align: right;
+}
+
+.message.received {
+	background: #e0e0e0;
+	color: black;
+	margin-right: auto;
+	text-align: left;
+}
+
+.chat-form {
+	display: flex;
+	gap: 10px;
+}
+
+.chat-form input {
+	flex: 1;
+	padding: 8px;
+	border-radius: 10px;
+	border: 1px solid #ccc;
+}
+
+.chat-form button {
+	padding: 8px 12px;
+	border: none;
+	border-radius: 10px;
+	background: #4cafef;
+	color: white;
+	cursor: pointer;
+}
+
 /* Scrollbar custom */
 .friends-list::-webkit-scrollbar {
   width: 6px;
@@ -721,7 +776,7 @@ button
 
 .pending-requests {
 	width: 220px;
-	background: rgba(255, 255, 255, 0.15);
+	background: rgba(0, 0, 200, 0.1);
 	backdrop-filter: blur(20px) saturate(180%);
 	-webkit-backdrop-filter: blur(20px) saturate(180%);
 	border-radius: 15px;
@@ -831,4 +886,88 @@ button
 }
 .refuse-btn:hover {
 	background: rgba(200, 50, 45, 0.9);
+}
+
+/* CSS pour le menu clique droit */
+.context-menu {
+  position: absolute;
+  z-index: 1000;
+  width: 200px;
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 6px 0;
+  box-shadow: 0 8px 24px, rgba(0,0,0,0.25);
+  animation: fadeIn 0.2s ease;
+}
+
+.context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu li {
+  padding: 12px 18px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu li:hover {
+  background: rgba(255, 0, 0, 0.45);
+  transform: scale(1.03);
+  border-radius: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* CSS pour le menu clique droit */
+
+.profile-popup {
+  position: absolute;
+  z-index: 1100;
+  width: 260px;
+  background: rgba(20,20,30,0.95);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.profile-popup.hidden {
+  display: none;
+}
+.profile-popup .profile-popup-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.profile-popup h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+.profile-popup .profile-stats p {
+  margin: 6px 0;
+  font-size: 0.95rem;
+  color: #ddd;
 }

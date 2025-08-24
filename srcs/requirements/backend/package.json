@@ -8,7 +8,11 @@
     },
     "dependencies": {
         "@fastify/jwt": "^9.1.0",
+        "@fastify/websocket": "^11.2.0",
         "better-sqlite3": "^9.0.0",
         "fastify": "^5.0.0"
+    },
+    "devDependencies": {
+        "@types/ws": "^8.18.1"
     }
 }
