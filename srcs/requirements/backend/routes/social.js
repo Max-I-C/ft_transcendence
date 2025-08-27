@@ -1,8 +1,18 @@
+/*
+// -- social.js -- //
+#######################################################################################
+# The social.js file is responsible for handling user social interactions, including  #
+# friend requests, blocking users, and managing friendships. It defines the routes    #
+# and logic for social-related operations.                                            #
+#######################################################################################
+*/
+
 import { db } from '../db.js';
 import { connectedUsers } from '../connectedUsers.js';
 
 export default async function socialRoutes(fastify) {
   // POST /api/social/request
+  // # This function is responsible for sending friend requests # //
   fastify.post('/request', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const { usernameFriend } = request.body;
@@ -41,6 +51,7 @@ export default async function socialRoutes(fastify) {
   });
 
   // POST /api/social/respond
+  // # This function is responsible of the awnser to the friend request # //
   fastify.post('/respond', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const { notificationId, action } = request.body;

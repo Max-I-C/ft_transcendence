@@ -1,8 +1,18 @@
+/*
+// -- profile.js -- //
+#######################################################################################
+# The profile.js file is responsible for handling user profile information, including #
+# fetching and updating user details. It defines the routes and logic for profile     #
+# page related operations.                                                            #
+#######################################################################################
+*/
+
 import bcrypt from 'bcrypt';
 import { db } from '../db.js';
 
 export default async function profileRoutes(fastify) {
   // GET /api/profile
+  // # This function collects user information. # //
   fastify.get('/profile', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const stmtProfile = db.prepare(`
@@ -29,6 +39,7 @@ export default async function profileRoutes(fastify) {
   });
 
   // POST /api/profile/update
+  // # This is the function that is linked to the edit button on the profile page # //
   fastify.post('/profile/update', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const { username, email, twoaf, password } = request.body;
@@ -64,6 +75,7 @@ export default async function profileRoutes(fastify) {
   });
 
   // POST /api/simulate-match
+  // # This function is here to simulate a win match, this function will be removed in the moment that we make the game part # //
   fastify.post('/simulate-match', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const { match_score, result, points_change } = request.body;
@@ -96,6 +108,7 @@ export default async function profileRoutes(fastify) {
   });
 
   // public profile by id (GET /api/users/profile/:id)
+  // # This function collect the data when a user is looking for the profile of one of his friend # //
   fastify.get('/users/profile/:id', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const id = parseInt(request.params.id, 10);
     if (isNaN(id)) {

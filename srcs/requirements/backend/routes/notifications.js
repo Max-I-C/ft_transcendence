@@ -1,7 +1,17 @@
+/*
+// -- notifications.js -- //
+#######################################################################################
+# The notifications.js file is responsible for handling user notifications, including #
+# fetching and updating notification status. It defines the routes and logic for      #
+# notification-related operations.                                                    #
+#######################################################################################
+*/
+
 import { db } from '../db.js';
 
 export default async function notificationRoutes(fastify) {
   // GET /api/notifications
+  // # This function retrieves all notifications for the authenticated user. # //
   fastify.get('/', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const notifications = db.prepare(
@@ -15,6 +25,7 @@ export default async function notificationRoutes(fastify) {
   });
 
   // POST /api/notifications/:id/read
+  // This function marks a notification as read for the authenticated user. # //
   fastify.post('/:id/read', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const id = request.params.id;

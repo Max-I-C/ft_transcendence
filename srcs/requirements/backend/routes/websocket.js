@@ -1,5 +1,16 @@
+/*
+// -- websocket.js -- //
+######################################################################################
+# The websocket.js file is responsible for handling WebSocket connections and         #
+# real-time communication between users. It defines the routes and logic for         #
+# WebSocket events, such as user authentication and friend requests.                #
+######################################################################################
+*/
+
 import { connectedUsers } from '../connectedUsers.js';
 
+// # In this case is a bit diferent its like a big function and when we want to add a Websocket event we add it here # //
+// # btw, take care with the WS configuration, its quite sensitive, so try to just update/add the events #
 export default async function websocketRoutes(fastify) {
   fastify.get('/ws', { websocket: true }, (socket, req) => {
     let currentUser = null;

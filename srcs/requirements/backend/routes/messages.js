@@ -1,8 +1,18 @@
+/*
+// -- messages.js -- //
+#######################################################################################
+# The messages.js file is responsible for handling user messages, including sending   #
+# and retrieving messages between users. It defines the routes and logic for message  #
+# operations, such as fetching message history and sending new messages.              #
+#######################################################################################
+*/
+
 import { db } from '../db.js';
 import { connectedUsers } from '../connectedUsers.js';
 
 export default async function messagesRoutes(fastify) {
   // GET /api/messages/:friendId
+  // # This function collects all the messages between the user and his friend # //
   fastify.get('/:friendId', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const friendId = parseInt(request.params.friendId, 10);
@@ -24,6 +34,7 @@ export default async function messagesRoutes(fastify) {
   });
 
   // POST /api/messages
+  // # This function handles sending new messages between users, storing them in the appropriate table # //
   fastify.post('/', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const { toUserId, content } = request.body;
     const fromUserId = request.user.id;

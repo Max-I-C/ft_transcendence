@@ -1,6 +1,17 @@
+/*
+// -- auth.js -- //
+#######################################################################################
+# The auth.js file is responsible for handling user authentication, including login   #
+# and registration. It defines the routes and logic for user authentication-related   #
+# operations, such as validating credentials and issuing JWT tokens.                  #
+#######################################################################################
+*/
+
 import bcrypt from 'bcrypt';
 import { db } from '../db.js';
 
+// -- Here is the definition of the button "login" and the "register" of the frontend -- //
+// # it's just a basic implementation that will compare or store the data in the DB # //
 export default async function authRoutes(fastify) {
 
     fastify.post('/login', async(request, reply) =>
