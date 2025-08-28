@@ -44,7 +44,8 @@ export default async function socialRoutes(fastify) {
         .run(friend.id, user.id, idOfTheFriendshipRecord);
 
       return reply.code(201).send({ message: 'Friend request sent' });
-    } catch (err) {
+    } 
+    catch (err) {
       fastify.log.error(err);
       return reply.code(500).send({ message: 'Server error' });
     }
@@ -77,7 +78,8 @@ export default async function socialRoutes(fastify) {
       });
       transaction();
       return { message: `Friend request successfuly managed` };
-    } catch (err) {
+    } 
+    catch (err) {
       console.error(err);
       return reply.code(404).send({ message: err.message });
     }
@@ -129,7 +131,8 @@ export default async function socialRoutes(fastify) {
           OR (sender_id = ? AND receiver_id = ?)
       `).run(user.id, blockedId, blockedId, user.id);
       return reply.send({ success: true, message: 'Utilisateur bloqué' });
-    } catch (err) {
+    } 
+    catch (err) {
       return reply.code(500).send({ message: 'Erreur lors du blocage' });
     }
   });

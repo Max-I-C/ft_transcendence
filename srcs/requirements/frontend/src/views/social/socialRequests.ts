@@ -65,13 +65,15 @@ export async function loadNotification(socket: WebSocket) {
                     } else {
                         alert('Error with accept request to API');
                     }
-                } catch (err) {
+                } 
+                catch (err) {
                     console.error(err);
                     alert('Network Error');
                 }
             });
         });
-    } catch (err) {
+    } 
+    catch (err) {
         console.error(err);
     }
 }

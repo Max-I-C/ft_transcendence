@@ -31,7 +31,8 @@ export async function loadFriendList() {
             }
         }
         setupFriendClickHandlers();
-    } catch (err) {
+    } 
+    catch (err) {
         console.error(err);
     }
 }
@@ -66,7 +67,8 @@ export function setupAddFriendForm(socket: WebSocket) {
                 const errorData = await response.json();
                 alert(errorData.message || 'Erreur lors de l\'invitation');
             }
-        } catch (err) {
+        } 
+        catch (err) {
             console.error(err);
             alert('Network Error');
         }

@@ -36,7 +36,8 @@ export function setupSocket(onMessage: (socket: WebSocket) => void) {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             }
-        } catch (err) {
+        } 
+        catch (err) {
             console.error('Failed to parse JSON:', err);
         }
     });

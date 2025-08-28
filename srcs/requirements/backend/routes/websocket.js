@@ -82,7 +82,8 @@ export default async function websocketRoutes(fastify) {
             }));
           }
         }
-      } catch (err) {
+      } 
+      catch (err) {
         console.error('WS error:', err);
       }
     });

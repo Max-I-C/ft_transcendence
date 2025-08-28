@@ -54,7 +54,8 @@ export function setupContextMenu(socket: WebSocket) {
             if (!res.ok) throw new Error('Unable to fetch profile');
             const profile = await res.json();
             showProfilePopup(profile, lastContextClickPos ?? undefined);
-        } catch (err) {
+        } 
+        catch (err) {
             console.error(err);
             alert('Erreur lors de la récupération du profil');
         }

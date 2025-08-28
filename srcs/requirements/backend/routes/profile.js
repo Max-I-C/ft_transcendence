@@ -68,7 +68,8 @@ export default async function profileRoutes(fastify) {
       stmt.run(...params);
 
       return { message: 'Profil mis à jour' };
-    } catch (err) {
+    } 
+    catch (err) {
       fastify.log.error(err);
       reply.code(500).send({ message: 'Erreur serveur' });
     }
@@ -101,7 +102,8 @@ export default async function profileRoutes(fastify) {
       `);
       updateStatsStmt.run(result, result, points_change, user.id);
       return { message: 'Simualtion complete' };
-    } catch (err) {
+    } 
+    catch (err) {
       fastify.log.error(err);
       return reply.code(500).send({ message: 'Server error' });
     }
