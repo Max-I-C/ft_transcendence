@@ -1,4 +1,12 @@
-// socialProfile.ts
+/*
+// -- socialProfile.ts -- //
+#######################################################################################
+# The socialProfile.ts file is the one that load when the user                        #
+# press the button "see profile" of one of his friend, he just request some data      # 
+# to the backend and display it.                                                      #
+#######################################################################################
+*/
+
 export function showProfilePopup(profile: { username: string; game_play: number; game_win: number; game_loss: number; score_total: number; level: number }, pos?: { x: number; y: number }) {
     const popup = document.getElementById('profile-popup') as HTMLDivElement;
     if (!popup) return;

@@ -1,4 +1,10 @@
-// socialApi.ts
+/*
+// -- socialApi.ts -- //
+#######################################################################################
+# The socialApi.ts is here that we treat are send all the request to the backend.     #
+#######################################################################################
+*/
+
 export async function apiGet(path: string, token?: string) {
     const res = await fetch(path, { headers: token ? { 'Authorization': `Bearer ${token}` } : undefined });
     if (!res.ok) throw new Error(`API GET ${path} failed (${res.status})`);

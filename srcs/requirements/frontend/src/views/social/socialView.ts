@@ -1,10 +1,12 @@
 /*
 // -- socialView.ts -- //
 #######################################################################################
-# The socialView.ts file is responsible of the                   #
+# The socialView.ts file is like the main of the social page, basically               #
+# this page is executing all the other functions/Api_Call/WebSocket_Request.          #
 #######################################################################################
 */
 
+// -- Defintion of all the path to other file and functions -- //
 import { navigateTo } from '../../main.js';
 import { logout } from '../auth.js';
 import { setupSocket } from './socialSocket.js';
@@ -15,8 +17,10 @@ import { renderSocialUI } from './socialUI.js';
 
 export function showSocialView() {
     const app = document.getElementById('app')!;
+    // -- Loading the HTML -- //
     renderSocialUI(app);
 
+    // -- WebSocket part -- //
     setupSocket((socket) => {
         setupAddFriendForm(socket);
         setupContextMenu(socket);
@@ -24,6 +28,7 @@ export function showSocialView() {
         loadFriendList();
     });
 
+    // -- NavBar -- //
     document.body.className = 'social-page';
     document.getElementById('game-link')?.addEventListener('click', () => navigateTo('/game'));
     document.getElementById('profile-link')?.addEventListener('click', () => navigateTo('/profile'));

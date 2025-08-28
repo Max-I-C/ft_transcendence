@@ -1,4 +1,12 @@
-// socialContextMenu.ts
+/*
+// -- socialContextMenu.ts -- //
+#######################################################################################
+# The socialContextMenu.ts file is responsible of the page when the user              #
+# do a right click on one of his friend in his friend list.                           #
+# This page also manage the logic for the remove and block button.                    #
+#######################################################################################
+*/
+
 import { info_message } from './socialChat.js';
 import { loadFriendList } from './socialFriends.js';
 import { showProfilePopup } from './socialProfile.js';
@@ -6,7 +14,6 @@ import { showProfilePopup } from './socialProfile.js';
 let currentFriendId: string | null = null;
 let lastContextClickPos: { x: number; y: number } | null = null;
 
-// new helper: position & open the context menu (usable depuis un CustomEvent)
 export function openContextMenuFor(friendId: string, x: number, y: number) {
     const contextMenu = document.getElementById('context-menu') as HTMLDivElement | null;
     if (!contextMenu) return;
@@ -27,13 +34,11 @@ export function openContextMenuFor(friendId: string, x: number, y: number) {
     contextMenu.style.top = `${top}px`;
     contextMenu.classList.remove('hidden');
 
-    // mark selected item visually (optional)
     document.querySelectorAll<HTMLLIElement>('#friends-list li').forEach(el =>
         el.classList.toggle('selected', el.dataset.id === friendId)
     );
 }
 
-// listen to a CustomEvent dispatched by socialFriends to show the menu (avoids circular imports)
 document.addEventListener('friend-contextmenu', (e: Event) => {
     const detail = (e as CustomEvent).detail;
     if (!detail) return;

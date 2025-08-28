@@ -1,4 +1,11 @@
-// socialFriends.ts
+/*
+// -- socialFriends.ts -- //
+#######################################################################################
+# The socialFriends.ts file is the one that load the friend list and                  # 
+# manage when the user is sending a request to a other user.                          #
+#######################################################################################
+*/
+
 import { apiGet, apiPost } from './socialApi.js';
 import { setupFriendClickHandlers } from './socialChat.js';
 
@@ -20,7 +27,6 @@ export async function loadFriendList() {
                 li.textContent = '@' + friend.username;
                 li.dataset.id = String(friend.id);
 
-                // right-click (context menu) handler -> dispatch CustomEvent
                 li.addEventListener('contextmenu', (e: MouseEvent) => {
                     e.preventDefault();
                     const detail = { id: String(friend.id), x: e.clientX, y: e.clientY };

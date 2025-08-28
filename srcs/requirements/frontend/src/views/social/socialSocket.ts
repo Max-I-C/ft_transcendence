@@ -1,4 +1,10 @@
-// socialSocket.ts
+/*
+// -- socialSocket.ts -- //
+#######################################################################################
+# The socialSocket.ts file is the one that manage all the WebSocket exchange          #
+#######################################################################################
+*/
+
 import { loadNotification } from './socialRequests.js';
 import { loadFriendList } from './socialFriends.js';
 import { info_message } from './socialChat.js';

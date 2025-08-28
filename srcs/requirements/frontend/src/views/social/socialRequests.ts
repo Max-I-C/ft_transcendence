@@ -1,8 +1,16 @@
-// socialRequests.ts
+/*
+// -- socialRequests.ts -- //
+#######################################################################################
+# The socialRequests.ts file treat all the aspect of the friends requests and the     #
+# awnser to thoses requests                                                           #
+#######################################################################################
+*/
+
 import { apiGet } from './socialApi.js';
 import { loadFriendList } from './socialFriends.js';
 
 export async function loadNotification(socket: WebSocket) {
+    // -- The first part is about loading new request -- //
     try {
         const token = localStorage.getItem('token') ?? undefined;
         if (!token) return;
@@ -28,6 +36,7 @@ export async function loadNotification(socket: WebSocket) {
                 pendingList.appendChild(li);
             }
         }
+        // -- And the second part is to manage the accept or refused button pressed by the user -- //
         document.querySelectorAll('.accept-btn, .refuse-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const button = e.currentTarget as HTMLButtonElement;

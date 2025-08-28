@@ -1,3 +1,10 @@
+/*
+// -- socialUI.ts -- //
+#######################################################################################
+# The socialUI.ts file is the one that load all the html of the social page           #
+#######################################################################################
+*/
+
 export function renderSocialUI(app: HTMLElement) {
     app.innerHTML = `
         <nav class="terminal-navbar">

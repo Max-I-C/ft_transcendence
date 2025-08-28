@@ -1,4 +1,12 @@
-// socialChat.ts
+/*
+// -- socialChat.ts -- //
+#######################################################################################
+# The socialChat.ts file is responsible of the chat. It's basically here that         #
+# manage to store new message, load previous ones, send message to the user           #
+# when he has to be notify of a change (like being removed).                          #
+#######################################################################################
+*/
+
 export function setupFriendClickHandlers() {
     const friendsList = document.getElementById('friends-list');
     const chatSection = document.querySelector('.chat-bubble') as HTMLElement;
