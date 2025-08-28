@@ -10,7 +10,7 @@ function UserDisconnected(userId) {
 }
 
 function isUserConnected(userId) {
-    if(onlineUsers.has(userId))
+    if(onlineUsers.has(String(userId)))
         return(1);
     return(0);
 }

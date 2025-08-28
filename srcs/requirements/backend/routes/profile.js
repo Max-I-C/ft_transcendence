@@ -35,9 +35,6 @@ export default async function profileRoutes(fastify) {
       LIMIT 10
     `);
     const match_logs = stmtLogs.all(user.id);
-
-    profile.is_online = isUserConnected(user.id);
-
     return { profile, match_logs };
   });
 
@@ -130,7 +127,7 @@ export default async function profileRoutes(fastify) {
     if (!profile) {
       return reply.code(404).send({ message: 'User not found' });
     }
-
+    profile.is_online = isUserConnected(id);
     return reply.send(profile);
   });
 }

@@ -6,13 +6,16 @@
 #######################################################################################
 */
 
-export function showProfilePopup(profile: { username: string; game_play: number; game_win: number; game_loss: number; score_total: number; level: number }, pos?: { x: number; y: number }) {
+export function showProfilePopup(profile: { username: string; game_play: number; game_win: number; game_loss: number; score_total: number; level: number; is_online: number}, pos?: { x: number; y: number }) {
     const popup = document.getElementById('profile-popup') as HTMLDivElement;
     if (!popup) return;
     popup.innerHTML = `
         <div class="profile-popup-inner">
             <button id="profile-popup-close" class="profile-popup-close">✕</button>
-            <h3>@${profile.username}</h3>
+            <h3>
+                @${profile.username}
+                <span class="status-indicator ${profile.is_online ? 'online' : 'offline'}"></span>
+            </h3>
             <div class="profile-stats">
                 <p>Level: ${profile.level ?? 0}</p>
                 <p>Score total: ${profile.score_total ?? 0}</p>
