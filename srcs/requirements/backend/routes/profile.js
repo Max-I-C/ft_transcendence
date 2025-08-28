@@ -9,7 +9,7 @@
 
 import bcrypt from 'bcrypt';
 import { db } from '../db.js';
-import { isUserOnline } from '../onlineUsers.js';
+import { isUserConnected } from '../onlineUsers.js';
 
 export default async function profileRoutes(fastify) {
   // GET /api/profile
@@ -36,7 +36,7 @@ export default async function profileRoutes(fastify) {
     `);
     const match_logs = stmtLogs.all(user.id);
 
-    profile.is_online = isUserOnline(user.id);
+    profile.is_online = isUserConnected(user.id);
 
     return { profile, match_logs };
   });

@@ -8,6 +8,7 @@
 */
 
 import { connectedUsers } from '../connectedUsers.js';
+import { UserConnected, UserDisconnected } from '../onlineUsers.js';
 
 // # In this case is a bit diferent its like a big function and when we want to add a Websocket event we add it here # //
 // # btw, take care with the WS configuration, its quite sensitive, so try to just update/add the events #
@@ -23,6 +24,7 @@ export default async function websocketRoutes(fastify) {
           const payload = fastify.jwt.verify(msg.token);
           currentUser = String(payload.id);
           connectedUsers.set(currentUser, socket);
+          UserConnected(currentUser);
           console.log(`User connected: ${currentUser}`);
         }
 
@@ -91,6 +93,7 @@ export default async function websocketRoutes(fastify) {
     socket.on('close', () => {
       if (currentUser) {
         connectedUsers.delete(currentUser);
+        UserDisconnected(currentUser);
         console.log(`User disconnected: ${currentUser}`);
       }
     });
