@@ -9,6 +9,7 @@
 
 import bcrypt from 'bcrypt';
 import { db } from '../db.js';
+import { isUserOnline } from '../onlineUsers.js';
 
 export default async function profileRoutes(fastify) {
   // GET /api/profile
@@ -34,6 +35,8 @@ export default async function profileRoutes(fastify) {
       LIMIT 10
     `);
     const match_logs = stmtLogs.all(user.id);
+
+    profile.is_online = isUserOnline(user.id);
 
     return { profile, match_logs };
   });
