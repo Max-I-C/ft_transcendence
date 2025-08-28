@@ -60,19 +60,19 @@ export function setupAddFriendForm(socket: WebSocket) {
             const resId = await fetch(`/api/users/id?username=${encodeURIComponent(usernameFriend)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!resId.ok) throw new Error('Utilisateur introuvable');
+            if (!resId.ok) throw new Error('Unknow user');
             const { id: friendId } = await resId.json();
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({ type: 'friend_request', to: friendId, token }));
             }
             const response = await apiPost('/api/social/request', { usernameFriend }, token);
             if (response.ok) {
-                alert('Invitation correctement envoyée !');
+                alert('Invitation send successfully !');
                 friendInput.value = "";
                 addBtn.disabled = true;
             } else {
                 const errorData = await response.json();
-                alert(errorData.message || 'Erreur lors de l\'invitation');
+                alert(errorData.message || 'Error during the invitation');
             }
         } 
         catch (err) {

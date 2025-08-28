@@ -1,9 +1,9 @@
 /*
 // -- socialChat.ts -- //
 #######################################################################################
-# The socialChat.ts file is responsible of the chat. It's basically here that         #
-# manage to store new message, load previous ones, send message to the user           #
-# when he has to be notify of a change (like being removed).                          #
+# The socialChat.ts file is responsible of the chat. It's basically here that we      #
+# manage to store new messages, load previous ones, and send messages to the user     #
+# when he has to be notify of a change (like being removed, ...).                     #
 #######################################################################################
 */
 
@@ -28,13 +28,13 @@ export function setupFriendClickHandlers() {
             const messages = await res.json();
             // -- HTML of the chat -- //
             chatSection.innerHTML = `
-                <h2>Conversation avec ${username}</h2>
+                <h2>Chat with ${username}</h2>
                 <div class="chat-window">
                     <ul id="chat-messages" class="chat-messages" data-friend-id="${friendId}"></ul>
                 </div>
                 <form id="chat-form" class="chat-form">
-                    <input type="text" id="chat-input" placeholder="Écris un message..." required />
-                    <button type="submit">Envoyer</button>
+                    <input type="text" id="chat-input" placeholder="Write a message..." required />
+                    <button type="submit">Send</button>
                 </form>
             `;
             const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
@@ -43,7 +43,7 @@ export function setupFriendClickHandlers() {
                 const liMsg = document.createElement('li');
                 const isReceived = msg.sender_username === username;
                 liMsg.classList.add('message', isReceived ? 'received' : 'sent');
-                liMsg.textContent = isReceived ? `@${msg.sender_username}: ${msg.content}` : `Moi : ${msg.content}`;
+                liMsg.textContent = isReceived ? `@${msg.sender_username}: ${msg.content}` : `Me : ${msg.content}`;
                 chatMessages.appendChild(liMsg);
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -68,7 +68,7 @@ export function setupFriendClickHandlers() {
                     const msg = await res.json();
                     const li = document.createElement('li');
                     li.classList.add('message', 'sent');
-                    li.textContent = `Moi : ${msg.content}`;
+                    li.textContent = `Me : ${msg.content}`;
                     chatMessages.appendChild(li);
                     chatInput.value = '';
                     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -91,7 +91,7 @@ export function info_message(message: string) {
         const chatForm = document.getElementById('chat-form') as HTMLFormElement | null;
         if (chatInput) {
             chatInput.disabled = true;
-            chatInput.placeholder = 'Envoi désactivé';
+            chatInput.placeholder = 'Sending disabled';
         }
         if (chatForm) {
             const sendBtn = chatForm.querySelector('button') as HTMLButtonElement | null;

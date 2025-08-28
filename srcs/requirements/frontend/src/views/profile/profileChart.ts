@@ -1,3 +1,10 @@
+/*
+// -- profileChart.ts -- //
+#######################################################################################
+# The profileChart.ts This part is just the circular graphic on the profile page      #
+#######################################################################################
+*/
+
 export function drawDonutChart(win: number, loss: number): void {
     const canvas = document.getElementById('donutChart') as HTMLCanvasElement;
     if (!canvas) return;
@@ -17,27 +24,27 @@ export function drawDonutChart(win: number, loss: number): void {
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY) - 10;
 
-    // win slice
+    // win slice //
     ctx.beginPath();
     ctx.moveTo(centerX, centerY);
     ctx.fillStyle = "#4caf50";
     ctx.arc(centerX, centerY, radius, 0, winAngle);
     ctx.fill();
 
-    // loss slice
+    // loss slice //
     ctx.beginPath();
     ctx.moveTo(centerX, centerY);
     ctx.fillStyle = "#f44336";
     ctx.arc(centerX, centerY, radius, winAngle, winAngle + lossAngle);
     ctx.fill();
 
-    // inner hole
+    // inner hole //
     ctx.beginPath();
     ctx.fillStyle = "#fff";
     ctx.arc(centerX, centerY, radius * 0.5, 0, 2 * Math.PI);
     ctx.fill();
 
-    // percentage text
+    // percentage text //
     const winratePercent = total === 0 ? 0 : Math.round((win / total) * 100);
     const text = `${winratePercent}%`;
 

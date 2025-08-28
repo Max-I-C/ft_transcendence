@@ -1,3 +1,10 @@
+/*
+// -- profileUI.ts -- //
+#######################################################################################
+# The profileUI.ts is the part that manage the HTML for the profile page.             #
+#######################################################################################
+*/
+
 import { navigateTo } from '../../main.js';
 import { logout } from '../auth.js';
 

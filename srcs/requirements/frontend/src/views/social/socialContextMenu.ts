@@ -64,7 +64,7 @@ export function setupContextMenu(socket: WebSocket) {
         } 
         catch (err) {
             console.error(err);
-            alert('Erreur lors de la récupération du profil');
+            alert('Error during the recuperation of the data profile');
         }
         contextMenu.classList.add('hidden');
     });
@@ -83,7 +83,7 @@ export function setupContextMenu(socket: WebSocket) {
         });
         if (res.ok) {
             await loadFriendList();
-            alert('Utilisateur bloqué');
+            alert('User blocked');
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'friend_remove_blocked',
@@ -93,7 +93,7 @@ export function setupContextMenu(socket: WebSocket) {
             }
             info_message('User correctly blocked !');
         } else {
-            alert('Erreur lors du blocage de l\'ami');
+            alert('Error blocking friend');
         }
     });
     // -- Part for the button "remove" -- //
@@ -107,7 +107,7 @@ export function setupContextMenu(socket: WebSocket) {
         });
         if (res.ok) {
             await loadFriendList();
-            alert('Ami supprimé');
+            alert('Friend deleted');
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'friend_remove_blocked',
@@ -117,7 +117,7 @@ export function setupContextMenu(socket: WebSocket) {
             }
             info_message('User correctly deleted !');
         } else {
-            alert('Erreur lors de la suppression de l\'ami');
+            alert('Error blocking friend');
         }
     });
 }

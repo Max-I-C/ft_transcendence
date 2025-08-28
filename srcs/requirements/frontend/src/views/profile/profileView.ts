@@ -1,10 +1,18 @@
+/*
+// -- profileView.ts -- //
+#######################################################################################
+# The profileView.ts is like that main that display and load all                      #
+# the logic for the page.                                                             #
+#######################################################################################
+*/
+
 import { renderProfileUI } from './profileUI.js';
 import { loadProfile, updateProfileApi } from './profileApi.js';
 import { drawDonutChart } from './profileChart.js';
 import { renderRanks } from './profileRank.js';
 
 export async function showProfileView() {
-    // render UI and nav
+    // -- Loading all the HTML -- //
     renderProfileUI();
 
     const token = localStorage.getItem('token');
@@ -12,7 +20,7 @@ export async function showProfileView() {
     const profile = data.profile;
     const matchLogs = data.match_logs ?? [];
 
-    // populate fields
+    // -- Fill the data of the user -- //
     (document.getElementById('username-text') as HTMLElement).innerText = profile.username ?? 'Unknow';
     (document.getElementById('email-text') as HTMLElement).innerText = profile.email ?? 'Unknow';
     (document.getElementById('game_play') as HTMLElement).innerText = String(profile.game_play ?? 'Unknow');
@@ -26,10 +34,10 @@ export async function showProfileView() {
     (document.getElementById('games-lost') as HTMLElement).innerText = String(profile.game_loss ?? 'Unknow');
     (document.getElementById('score') as HTMLElement).innerText = String(profile.score_total ?? 'Unknow');
 
-    // ranks
+    // -- Load the rank of the user -- //
     renderRanks(profile);
 
-    // match logs
+    // -- Load the match logs -- //
     const logsList = document.getElementById('logs-list')!;
     logsList.innerHTML = '';
     if (matchLogs && matchLogs.length > 0) {
@@ -42,12 +50,12 @@ export async function showProfileView() {
         logsList.innerHTML = '<li>No match logs found.</li>';
     }
 
-    // chart
+    // -- Load the circular graphic -- //
     if (typeof profile.game_win === 'number' && typeof profile.game_loss === 'number') {
         drawDonutChart(profile.game_win, profile.game_loss);
     }
 
-    // edit button handler
+    // -- Load the edit button -- //
     document.getElementById('edit-profile')!.addEventListener('click', () => {
         const usernameText = document.getElementById('username-text')!;
         const usernameInput = document.getElementById('username-input') as HTMLInputElement;
@@ -75,7 +83,7 @@ export async function showProfileView() {
         passwordConfirmInput.style.display = 'inline';
     });
 
-    // save handler
+    // -- Manage to save the data when you used the edit button -- //
     document.getElementById('save-profile')!.addEventListener('click', async () => {
         const tokenLocal = localStorage.getItem('token');
         const password = (document.getElementById('password-input') as HTMLInputElement).value;
@@ -96,10 +104,10 @@ export async function showProfileView() {
 
         const response = await updateProfileApi(updatedProfile, tokenLocal!);
         if (response.ok) {
-            alert('Profil mis a jour !');
+            alert('Profile updated !');
             await showProfileView();
         } else {
-            alert('Erreur lors de l update');
+            alert('Error during the update');
         }
     });
 }

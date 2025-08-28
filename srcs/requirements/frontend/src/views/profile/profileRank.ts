@@ -1,3 +1,10 @@
+/*
+// -- profileRank.ts -- //
+#######################################################################################
+# The profileRank.ts is the part for the logic of the display of the ranks.           #
+#######################################################################################
+*/
+
 export function renderRanks(profile: any) {
     const currentRankImg = document.getElementById('currentRankImg') as HTMLImageElement | null;
     const currentRankLabel = document.getElementById('currentRankLabel') as HTMLDivElement | null;

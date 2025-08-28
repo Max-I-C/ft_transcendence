@@ -17,21 +17,21 @@ export function renderSocialUI(app: HTMLElement) {
             </ul>
         </nav>
         <div class="social-container">
-            <section class="friends-column glass" aria-label="Liste des amis">
+            <section class="friends-column glass" aria-label="Friends list">
                 <div id="pending-requests" class="pending-requests glass">
                     <h3>Friends requests</h3>
                     <ul class="friends-list" role="list" id="pending-list"></ul>
                 </div>
-                <h2>Mes amis</h2>
+                <h2>My friends</h2>
                 <ul class="friends-list" role="list" id="friends-list"></ul>
                 <form class="add-friend" id="add-friend-form">
-                    <input id="friendUsername" type="text" placeholder="Ajouter un ami par username" required />
-                    <button id="addBtn" type="submit" disabled>Ajouter</button>
+                    <input id="friendUsername" type="text" placeholder="Add a friend by his username" required />
+                    <button id="addBtn" type="submit" disabled>Add</button>
                 </form>
             </section>
-            <section class="chat-bubble glass-conversation" aria-label="Zone de conversation">
+            <section class="chat-bubble glass-conversation" aria-label="Chat area">
                 <h2>Conversation</h2>
-                <div class="chat-empty">Sélectionne un ami pour afficher la conversation ici.</div>
+                <div class="chat-empty">Select a friend to load your conversation.</div>
             </section>
         </div>
         <div id="profile-popup" class="profile-popup hidden" role="dialog" aria-hidden="true"></div>

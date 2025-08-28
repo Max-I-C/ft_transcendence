@@ -2,8 +2,7 @@
 // -- socialProfile.ts -- //
 #######################################################################################
 # The socialProfile.ts file is the one that load when the user                        #
-# press the button "see profile" of one of his friend, he just request some data      # 
-# to the backend and display it.                                                      #
+# press the button "see profile" of one of his friend.                                #
 #######################################################################################
 */
 

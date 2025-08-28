@@ -1,7 +1,7 @@
 /*
 // -- socialApi.ts -- //
 #######################################################################################
-# The socialApi.ts is here that we treat are send all the request to the backend.     #
+# The socialApi.ts it's here that we treat and send all the request to the backend.   #
 #######################################################################################
 */
 

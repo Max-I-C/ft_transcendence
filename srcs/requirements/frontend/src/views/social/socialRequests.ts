@@ -21,7 +21,7 @@ export async function loadNotification(socket: WebSocket) {
         const pendingRequests = notifications.filter(n => n.type === 'pending');
         pendingList.innerHTML = '';
         if (pendingRequests.length === 0) {
-            pendingList.innerHTML = '<li>Aucune demande</li>';
+            pendingList.innerHTML = '<li>No request</li>';
         } else {
             for (const notif of pendingRequests) {
                 const li = document.createElement('li');
@@ -60,7 +60,7 @@ export async function loadNotification(socket: WebSocket) {
                         const resId = await fetch(`/api/users/id?username=${encodeURIComponent(username)}`, {
                             headers: { 'Authorization': `Bearer ${tokenLocal}` }
                         });
-                        if (!resId.ok) throw new Error('Utilisateur introuvable');
+                        if (!resId.ok) throw new Error('Unknow user');
                         const { id: friendId } = await resId.json();
                         if (socket && socket.readyState === WebSocket.OPEN) {
                             socket.send(JSON.stringify({

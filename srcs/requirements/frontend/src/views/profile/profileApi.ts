@@ -1,3 +1,10 @@
+/*
+// -- profileApi.ts -- //
+#######################################################################################
+# The profileApi.ts it's here that we treat and send all the request to the backend.  #
+#######################################################################################
+*/
+
 export async function loadProfile(token?: string | null) {
     if (!token) token = localStorage.getItem('token') || undefined;
     if (!token) throw new Error('No token');
