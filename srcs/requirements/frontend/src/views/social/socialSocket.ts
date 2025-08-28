@@ -1,7 +1,7 @@
 /*
 // -- socialSocket.ts -- //
 #######################################################################################
-# The socialSocket.ts file is the one that manage all the WebSocket exchange          #
+# The socialSocket.ts file is the one that manage all the WebSocket exchange.         #
 #######################################################################################
 */
 

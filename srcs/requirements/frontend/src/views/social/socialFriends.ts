@@ -43,6 +43,7 @@ export async function loadFriendList() {
     }
 }
 
+// -- Logic for the button add friend -- //
 export function setupAddFriendForm(socket: WebSocket) {
     const friendInput = document.getElementById('friendUsername') as HTMLInputElement;
     const addBtn = document.getElementById('addBtn') as HTMLButtonElement;

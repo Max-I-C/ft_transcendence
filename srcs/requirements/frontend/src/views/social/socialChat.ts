@@ -17,6 +17,7 @@ export function setupFriendClickHandlers() {
             const friendId = li.dataset.id;
             const token = localStorage.getItem('token') ?? undefined;
             if (!friendId || !token) return;
+            // -- Request to check all the messages between two users -- //
             const res = await fetch(`/api/messages/${friendId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -25,6 +26,7 @@ export function setupFriendClickHandlers() {
                 return;
             }
             const messages = await res.json();
+            // -- HTML of the chat -- //
             chatSection.innerHTML = `
                 <h2>Conversation avec ${username}</h2>
                 <div class="chat-window">
@@ -36,6 +38,7 @@ export function setupFriendClickHandlers() {
                 </form>
             `;
             const chatMessages = document.getElementById('chat-messages') as HTMLUListElement;
+            // -- Loading all the messages in the chat -- //
             for (const msg of messages) {
                 const liMsg = document.createElement('li');
                 const isReceived = msg.sender_username === username;
@@ -46,6 +49,7 @@ export function setupFriendClickHandlers() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
             const chatForm = document.getElementById('chat-form') as HTMLFormElement;
             const chatInput = document.getElementById('chat-input') as HTMLInputElement;
+            // -- Storing new message -- //
             chatForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const text = chatInput.value.trim();
@@ -74,6 +78,7 @@ export function setupFriendClickHandlers() {
     });
 }
 
+// -- Sending message in the chat to notify the user of a change -- //
 export function info_message(message: string) {
     const chatMessages = document.getElementById('chat-messages') as HTMLUListElement | null;
     if (chatMessages) {

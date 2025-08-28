@@ -14,6 +14,7 @@ import { showProfilePopup } from './socialProfile.js';
 let currentFriendId: string | null = null;
 let lastContextClickPos: { x: number; y: number } | null = null;
 
+// -- Definition of the display for the right click menu -- //
 export function openContextMenuFor(friendId: string, x: number, y: number) {
     const contextMenu = document.getElementById('context-menu') as HTMLDivElement | null;
     if (!contextMenu) return;
@@ -48,6 +49,7 @@ document.addEventListener('friend-contextmenu', (e: Event) => {
 export function setupContextMenu(socket: WebSocket) {
     const contextMenu = document.getElementById('context-menu') as HTMLDivElement;
     document.addEventListener('click', () => contextMenu.classList.add('hidden'));
+    // -- Part for the button "see profile" -- //
     document.getElementById('profile-action')?.addEventListener('click', async () => {
         if (!currentFriendId) return;
         const tokenLocal = localStorage.getItem('token') ?? undefined;
@@ -66,6 +68,7 @@ export function setupContextMenu(socket: WebSocket) {
         }
         contextMenu.classList.add('hidden');
     });
+    // -- Part for the button "block" -- //
     document.getElementById('block-action')?.addEventListener('click', async () => {
         if (!currentFriendId) return;
         const tokenLocal = localStorage.getItem('token') ?? undefined;
@@ -93,6 +96,7 @@ export function setupContextMenu(socket: WebSocket) {
             alert('Erreur lors du blocage de l\'ami');
         }
     });
+    // -- Part for the button "remove" -- //
     document.getElementById('remove-action')?.addEventListener('click', async () => {
         if (!currentFriendId) return;
         const tokenLocal = localStorage.getItem('token') ?? undefined;

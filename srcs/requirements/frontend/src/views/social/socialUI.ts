@@ -1,7 +1,7 @@
 /*
 // -- socialUI.ts -- //
 #######################################################################################
-# The socialUI.ts file is the one that load all the html of the social page           #
+# The socialUI.ts file is the one that load all the html of the social page.          #
 #######################################################################################
 */
 

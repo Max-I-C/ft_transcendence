@@ -2,7 +2,7 @@
 // -- socialRequests.ts -- //
 #######################################################################################
 # The socialRequests.ts file treat all the aspect of the friends requests and the     #
-# awnser to thoses requests                                                           #
+# awnser to thoses requests.                                                          #
 #######################################################################################
 */
 
