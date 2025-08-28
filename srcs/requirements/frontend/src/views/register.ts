@@ -63,7 +63,8 @@ async function validateForm() {
 				const data = await response.json();
 				alert(data.message || 'Registration failed.');
 			}
-		} catch (error) {
+		} 
+		catch (error) {
 			console.error('Error during registration', error);
 			alert('Network or server error');
 		}

@@ -1,10 +1,19 @@
+/*
+// -- db.js -- //
+######################################################################################
+# The db.js file is responsible for the database connection and schema definition.   #
+# It initializes the SQLite database and creates the necessary tables for the        #
+# application to function properly.                                                  #
+######################################################################################
+*/
+
 import Database from "better-sqlite3";
 import fs from 'fs';
 
 const dbFile = './data/app.db';
 console.log('📦 SQLite path:', process.cwd() + '/' + dbFile);
 
-
+// -- Create data directory if it doesn't exist -- //
 if(!fs.existsSync('./data'))
 {
     fs.mkdirSync('./data');
@@ -12,6 +21,7 @@ if(!fs.existsSync('./data'))
 
 const db = new Database(dbFile);
 
+// -- Definition of all the tables and their content, so if you want data in the DB its here that you have to create the table -- //
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

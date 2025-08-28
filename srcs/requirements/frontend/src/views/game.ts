@@ -45,7 +45,7 @@ export function showGameView() {
 				body: JSON.stringify(matchData)
 			});
 			const data = await res.json();
-			console.log('✅ Match ajouté :', data);
+			console.log('✅ Match added :', data);
 		}
 		catch(err){
 			console.error('Error during simulation', err);
