@@ -25,7 +25,7 @@ export default async function socialRoutes(fastify) {
         WHERE (blocker_id = ? AND blocked_id = ?)
            OR (blocker_id = ? AND blocked_id = ?)
       `).get(user.id, friend.id, friend.id, user.id);
-      if (blocked) return reply.code(403).send({ message: 'Impossible, utilisateur bloqué' });
+      if (blocked) return reply.code(403).send({ message: 'Impossible, the user blocked you' });
 
       const existing = db.prepare(`
         SELECT * FROM friendships 
