@@ -141,6 +141,8 @@ export default async function profileRoutes(fastify) {
     return reply.send(profile);
   });
 
+  // public post ('/api/profile/avatar')
+  // # This function manage the changement of the user avatar # //
   fastify.post('/profile/avatar', { preValidation: [fastify.authenticate] }, async (req, reply) => {
     const data = await req.file();
     if (!data) return reply.code(400).send({ message: 'No file uploaded' });

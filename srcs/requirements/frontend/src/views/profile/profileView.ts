@@ -84,6 +84,7 @@ export async function showProfileView() {
         passwordConfirmInput.style.display = 'inline';
         changeAvatarBtn.style.display = 'inline';
 
+        // -- Part of the button that change the avatar -- //
         changeAvatarBtn.addEventListener('click', () => {
             const fileInput = document.getElementById('avatar-input') as HTMLInputElement;
             fileInput.click();
