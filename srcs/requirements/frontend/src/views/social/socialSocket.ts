@@ -8,15 +8,11 @@
 import { loadNotification } from './socialRequests.js';
 import { loadFriendList } from './socialFriends.js';
 import { info_message } from './socialChat.js';
+import { initializeWebSocket } from '../../utils/webSocketUtils.js';
 
 export function setupSocket(onMessage: (socket: WebSocket) => void) {
-    const socket = new WebSocket('ws://localhost:3000/ws');
-    const tokenLocal = localStorage.getItem('token') ?? undefined;
-    if (tokenLocal) {
-        socket.addEventListener('open', () => {
-            socket.send(JSON.stringify({ type: 'auth', token: tokenLocal }));
-        });
-    }
+    const socket = initializeWebSocket();
+    onMessage(socket);
     socket.addEventListener('message', (event) => {
         try {
             const msg = JSON.parse(event.data);

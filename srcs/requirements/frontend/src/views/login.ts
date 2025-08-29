@@ -1,4 +1,5 @@
 import { navigateTo } from '../main.js';
+import { initializeWebSocket } from '../utils/webSocketUtils.js';
 
 export function showLoginView() {
 	const app = document.getElementById('app')!;
@@ -39,8 +40,7 @@ export function showLoginView() {
 			});
 
 			if (response.ok) {
-				const data = await response.json();
-				localStorage.setItem('token', data.token);
+				initializeWebSocket();
 				alert('Connection accepted !');
 				navigateTo('/home');
 			} 
