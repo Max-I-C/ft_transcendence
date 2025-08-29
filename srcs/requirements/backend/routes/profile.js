@@ -130,4 +130,12 @@ export default async function profileRoutes(fastify) {
     profile.is_online = isUserConnected(id);
     return reply.send(profile);
   });
+
+  fastify.post('/profile/avatar', async (req, reply) => {
+    const data = req.file();
+    const uploadPath = path.join(__dirname, '../uploads', data.filename);
+    await pump(data.file, fs.createWriteStream(uploadPath));
+    const avatarUrl = `/uploads/${data.filename}`;
+    return reply.send({ avatarUrl });
+  });
 }
