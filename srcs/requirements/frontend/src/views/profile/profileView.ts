@@ -12,14 +12,15 @@ import { drawDonutChart } from './profileChart.js';
 import { renderRanks } from './profileRank.js';
 
 export async function showProfileView() {
-    // -- Loading all the HTML -- //
-    renderProfileUI();
 
     const token = localStorage.getItem('token');
     const data = await loadProfile(token);
     const profile = data.profile;
     const matchLogs = data.match_logs ?? [];
 
+    // -- Loading all the HTML -- //
+    renderProfileUI(profile);
+    
     // -- Fill the data of the user -- //
     (document.getElementById('username-text') as HTMLElement).innerText = profile.username ?? 'Unknow';
     (document.getElementById('email-text') as HTMLElement).innerText = profile.email ?? 'Unknow';

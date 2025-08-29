@@ -10,14 +10,23 @@
 import bcrypt from 'bcrypt';
 import { db } from '../db.js';
 import { isUserConnected } from '../onlineUsers.js';
+import path from 'path';
+import fs from 'fs';
+import pump from 'pump';
+import { fileURLToPath } from 'url';
+import fastify from 'fastify';
+import multipart from '@fastify/multipart';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default async function profileRoutes(fastify) {
+  await fastify.register(multipart);
   // GET /api/profile
   // # This function collects user information. # //
   fastify.get('/profile', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const stmtProfile = db.prepare(`
-      SELECT username, email, game_play, game_win, game_loss, score_total, level
+      SELECT username, email, avatar, game_play, game_win, game_loss, score_total, level
       FROM users 
       WHERE id = ?
     `);
@@ -35,6 +44,7 @@ export default async function profileRoutes(fastify) {
       LIMIT 10
     `);
     const match_logs = stmtLogs.all(user.id);
+
     return { profile, match_logs };
   });
 
@@ -131,11 +141,19 @@ export default async function profileRoutes(fastify) {
     return reply.send(profile);
   });
 
-  fastify.post('/profile/avatar', async (req, reply) => {
-    const data = req.file();
-    const uploadPath = path.join(__dirname, '../uploads', data.filename);
-    await pump(data.file, fs.createWriteStream(uploadPath));
-    const avatarUrl = `/uploads/${data.filename}`;
+  fastify.post('/profile/avatar', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+    const data = await req.file();
+    if (!data) return reply.code(400).send({ message: 'No file uploaded' });
+
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+    const filePath = path.join(uploadDir, `${req.user.id}-${data.filename}`);
+    await pump(data.file, fs.createWriteStream(filePath));
+
+    const avatarUrl = `/uploads/${req.user.id}-${data.filename}`;
+    db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(avatarUrl, req.user.id);
+
     return reply.send({ avatarUrl });
   });
 }

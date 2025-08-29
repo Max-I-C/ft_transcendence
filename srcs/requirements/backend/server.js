@@ -12,8 +12,11 @@ import Fastify from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import websocket from '@fastify/websocket';
 import { db } from './db.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const fastify = Fastify({ logger: true });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // -- definition of the JWT authentication middleware and the websocket -- //
 fastify.register(fastifyJwt, { secret: 'supersecretkey' });
@@ -37,6 +40,7 @@ import socialRoutes from './routes/social.js';
 import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
 import websocketRoutes from './routes/websocket.js';
+import fastifyStatic from '@fastify/static';
 
 // -- Here we are adding the prefix /api to the routes, like this you don't need to define all the function with /api/... --// 
 fastify.register(userRoutes, { prefix: '/api' });
@@ -46,6 +50,10 @@ fastify.register(socialRoutes, { prefix: '/api/social' });
 fastify.register(messageRoutes, { prefix: '/api/messages' });
 fastify.register(notificationRoutes, { prefix: '/api/notifications' });
 fastify.register(websocketRoutes); // pas besoin de prefix pour ws
+fastify.register(fastifyStatic, {
+  root: path.join(__dirname, 'uploads'),
+  prefix: '/uploads/',
+});
 
 // -- That is just for the websocket to know in wich port to listen -- //
 fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
