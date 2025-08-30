@@ -40,6 +40,8 @@ export function showLoginView() {
 			});
 
 			if (response.ok) {
+				const data = await response.json();
+				localStorage.setItem('token', data.token);
 				initializeWebSocket();
 				alert('Connection accepted !');
 				navigateTo('/home');
