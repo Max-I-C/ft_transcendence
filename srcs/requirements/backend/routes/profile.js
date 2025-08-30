@@ -128,7 +128,7 @@ export default async function profileRoutes(fastify) {
     }
 
     const stmt = db.prepare(`
-      SELECT username, game_play, game_win, game_loss, score_total, level
+      SELECT username, avatar, game_play, game_win, game_loss, score_total, level
       FROM users
       WHERE id = ?
       LIMIT 1
