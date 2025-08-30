@@ -8,8 +8,9 @@
 import { navigateTo } from '../../main.js';
 import { logout } from '../auth.js';
 
-export function renderProfileUI() {
+export function renderProfileUI(profile: any) {
     const app = document.getElementById('app')!;
+    console.log('Avatar URL:', profile.avatar);
     app.innerHTML = `
         <nav class="terminal-navbar">
             <ul class="terminal-nav-links">
@@ -23,9 +24,10 @@ export function renderProfileUI() {
         <div class="profile-container">
             <div class="glass profile-card">
                 <button id="edit-profile" class="edit-btn" title="Edit your profil">🔧</button>
-                <div class="profile-header">
-                    <div class="profile-picture" id="profile-picture"></div>
-                    <h2>Profile</h2>
+                <div id="profile-avatar">
+                    <img id="avatar-img" src="${profile.avatar ? `http://localhost:3000${profile.avatar}` : '/views/images/default.png'}" alt="Avatar" width="100" height="100" />
+                    <input type="file" id="avatar-input" style="display:none" accept="image/*" />
+                    <button id="change-avatar" style="display:none">Changer la photo</button>
                 </div>
                 <p><strong>Userame :</strong> <span id="username-text">loading.....</span> <input id="username-input" type="text" style="display: none;"></p>
                 <p><strong>Email :</strong> <span id="email-text">loading.....</span> <input id="email-input" type="email" style="display: none;"></p>

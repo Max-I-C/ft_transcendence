@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt
 COPY package.json package-lock.json* ./
 RUN npm install 
 RUN npm install bcrypt 
+RUN npm install @fastify/static
 RUN npm i @fastify/websocket
 RUN npm i @types/ws -D
 

@@ -12,14 +12,15 @@ import { drawDonutChart } from './profileChart.js';
 import { renderRanks } from './profileRank.js';
 
 export async function showProfileView() {
-    // -- Loading all the HTML -- //
-    renderProfileUI();
 
     const token = localStorage.getItem('token');
     const data = await loadProfile(token);
     const profile = data.profile;
     const matchLogs = data.match_logs ?? [];
 
+    // -- Loading all the HTML -- //
+    renderProfileUI(profile);
+    
     // -- Fill the data of the user -- //
     (document.getElementById('username-text') as HTMLElement).innerText = profile.username ?? 'Unknow';
     (document.getElementById('email-text') as HTMLElement).innerText = profile.email ?? 'Unknow';
@@ -64,7 +65,7 @@ export async function showProfileView() {
         const twoafText = document.getElementById('twoaf-text')!;
         const twoafInput = document.getElementById('twoaf-input') as HTMLInputElement;
         const saveBtn = document.getElementById('save-profile')!;
-
+        const changeAvatarBtn = document.getElementById('change-avatar')!;
         const passwordInput = document.getElementById('password-input') as HTMLInputElement;
         const passwordConfirmInput = document.getElementById('password-confirm-input') as HTMLInputElement;
 
@@ -81,6 +82,37 @@ export async function showProfileView() {
         saveBtn.style.display = 'inline';
         passwordInput.style.display = 'inline';
         passwordConfirmInput.style.display = 'inline';
+        changeAvatarBtn.style.display = 'inline';
+
+        // -- Part of the button that change the avatar -- //
+        changeAvatarBtn.addEventListener('click', () => {
+            const fileInput = document.getElementById('avatar-input') as HTMLInputElement;
+            fileInput.click();
+
+            fileInput.onchange = async () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    const formData = new FormData();
+                    formData.append('avatar', fileInput.files[0]);
+
+                    const tokenLocal = localStorage.getItem('token');
+                    const response = await fetch('/api/profile/avatar', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${tokenLocal!}`
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        (document.getElementById('avatar-img') as HTMLImageElement).src = data.avatarUrl;
+                    } 
+                    else {
+                        alert('Error updating avatar.');
+                    }
+                }
+            };
+        });
     });
 
     // -- Manage to save the data when you used the edit button -- //

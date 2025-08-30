@@ -971,3 +971,21 @@ button
   font-size: 0.95rem;
   color: #ddd;
 }
+
+/* For the online/offline status of the friend profile */
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background-color: gray; /* par défaut */
+}
+
+.status-indicator.online {
+  background-color: green;
+}
+
+.status-indicator.offline {
+  background-color: gray;
+}

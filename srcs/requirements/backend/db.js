@@ -29,6 +29,7 @@ db.exec(`
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     twoaf INTEGER DEFAULT 0,
+    avatar TEXT,
 
     game_play INTEGER DEFAULT 10,
     game_win INTEGER DEFAULT 6,
