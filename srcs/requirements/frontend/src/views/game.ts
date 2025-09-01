@@ -36,6 +36,8 @@ export function showGameView() {
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
 	document.getElementById('logout-link')!.addEventListener('click', () => logout());
 	
+	// Je penses que la strat c'est d'avoir un websocket qui envois une requetes backend pour dire que l'utilisateur a bouger la P1. Et que ca change sa coter frontend. Par contre je sais pas comment gerer les colision alors //
+
 	document.getElementById('play-game')?.addEventListener('click', async () => {
         if(gameInterval) return;
 
