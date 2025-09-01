@@ -42,4 +42,17 @@ export default async function gameRoutes(fastify, opts) {
         }
         return gameState;
     });
+
+    fastify.post('/game/move-paddle', async (request, reply) => {
+        const { direction } = request.body;
+        const speed = 10;
+
+        if (direction === 'up') {
+            gameState.paddle1.y = Math.max(0, gameState.paddle1.y - speed);
+        } 
+        if (direction === 'down') {
+            gameState.paddle1.y = Math.min(canvasHeight - gameState.paddle1.height, gameState.paddle1.y + speed);
+        }
+        reply.send({ status: true });
+    });
 }

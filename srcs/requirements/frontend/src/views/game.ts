@@ -38,6 +38,27 @@ export function showGameView() {
 	
 	// Je penses que la strat c'est d'avoir un websocket qui envois une requetes backend pour dire que l'utilisateur a bouger la P1. Et que ca change sa coter frontend. Par contre je sais pas comment gerer les colision alors //
 
+	document.addEventListener('keydown', async (e) => {
+		if(!gameInterval) return;
+		let direction = null;
+		if(e.key === 'ArrowUp' || e.key === 'w') direction = 'up';
+		if(e.key === 'ArrowDown' || e.key === 's') direction = 'down';
+		if(!direction) return;
+
+		try{
+			await fetch('/api/game/move-paddle', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ direction })
+			})
+		}
+		catch(err){
+			console.error('Error moving paddle', err);
+		}
+	});
+	
 	document.getElementById('play-game')?.addEventListener('click', async () => {
         if(gameInterval) return;
 
