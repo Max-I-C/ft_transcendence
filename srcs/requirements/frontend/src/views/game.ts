@@ -14,10 +14,20 @@ export function showGameView() {
 			</ul>
 		</nav>
 		<div class="welcome-bubble">
-			<button id="simulate-game" class="button" type="button">Simulate game result</button>
-			<p>Let's play</p>
-		</div>
+            <button id="simulate-game" class="button" type="button">Simulate game result</button>
+            <button id="play-game" class="button" type="button">Play game</button>
+            <p id="game-number">Number: --</p>
+            <p>Let's play</p>
+            <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+                <canvas id="pong-canvas" width="400" height="300" style="background: #222; border-radius: 8px;"></canvas>
+            </div>
+        </div>
 	`;
+
+	const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
+	const ctx = canvas.getContext('2d')!;
+
+	let gameInterval: number | null = null;
 
     document.body.className = 'home-page';
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
@@ -25,7 +35,40 @@ export function showGameView() {
 	document.getElementById('social-link')!.addEventListener('click', () => navigateTo('/social'));
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
 	document.getElementById('logout-link')!.addEventListener('click', () => logout());
+	
+	document.getElementById('play-game')?.addEventListener('click', async () => {
+        if(gameInterval) return;
 
+		gameInterval = window.setInterval(async () => { 
+
+			try{
+				const res = await fetch('/api/game/init');
+				const data = await res.json();
+
+				document.getElementById('game-number')!.textContent = 
+					`Ball: (${data.ball.x.toFixed(0)}, ${data.ball.y.toFixed(0)})`;
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				// Fond //
+				ctx.fillStyle = '#222';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				
+				// Padles // 
+				ctx.fillStyle = 'white';
+				ctx.fillRect(data.paddle1.x, data.paddle1.y, data.paddle1.width, data.paddle1.height);
+				ctx.fillRect(data.paddle2.x, data.paddle2.y, data.paddle2.width, data.paddle2.height);
+
+				// Ball // 
+				ctx.beginPath();
+				ctx.arc(data.ball.x, data.ball.y, data.ball.radius, 0, Math.PI * 2);
+				ctx.fill();
+			}
+			catch(err){
+				console.error('Error fetching game number', err);
+			}
+		}, 50);
+    });
 	
 	document.getElementById('simulate-game')?.addEventListener('click', async() => {
 		const token = localStorage.getItem('token');

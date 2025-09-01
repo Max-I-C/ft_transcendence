@@ -40,6 +40,7 @@ import socialRoutes from './routes/social.js';
 import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
 import websocketRoutes from './routes/websocket.js';
+import gameRoutes from './routes/game.js';
 import fastifyStatic from '@fastify/static';
 
 // -- Here we are adding the prefix /api to the routes, like this you don't need to define all the function with /api/... --// 
@@ -47,6 +48,7 @@ fastify.register(userRoutes, { prefix: '/api' });
 fastify.register(authRoutes, { prefix: '/api' });
 fastify.register(profileRoutes, { prefix: '/api' });
 fastify.register(socialRoutes, { prefix: '/api/social' });
+fastify.register(gameRoutes, { prefix: '/api' });
 fastify.register(messageRoutes, { prefix: '/api/messages' });
 fastify.register(notificationRoutes, { prefix: '/api/notifications' });
 fastify.register(websocketRoutes); // pas besoin de prefix pour ws
