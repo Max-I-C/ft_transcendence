@@ -18,6 +18,8 @@ export function showGameView() {
             <button id="play-game" class="button" type="button">Play game</button>
             <p id="game-number">Number: --</p>
             <p>Let's play</p>
+			<p id="score">Score: 0 - 0</p>
+			<p id="game-over" style="color:red; font-weight:bold;"></p>
             <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
                 <canvas id="pong-canvas" width="400" height="300" style="background: #222; border-radius: 8px;"></canvas>
             </div>
@@ -41,9 +43,27 @@ export function showGameView() {
 	document.addEventListener('keydown', async (e) => {
 		if(!gameInterval) return;
 		let direction = null;
-		if(e.key === 'ArrowUp' || e.key === 'w') direction = 'up';
-		if(e.key === 'ArrowDown' || e.key === 's') direction = 'down';
-		if(!direction) return;
+		let paddle = null;
+
+		if(e.key === 'ArrowUp' || e.key === 'w') {
+			direction = 'up';
+			paddle = 1;
+		}
+		if(e.key === 'ArrowDown' || e.key === 's') {
+			direction = 'down';
+			paddle = 1;
+		}
+		
+		if(e.key === 'o') {
+			direction = 'up';
+			paddle = 2;
+		}
+		if(e.key === 'l') {
+			direction = 'down';
+			paddle = 2;
+		} 
+
+		if(!direction || !paddle) return;
 
 		try{
 			await fetch('/api/game/move-paddle', {
@@ -51,7 +71,7 @@ export function showGameView() {
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ direction })
+				body: JSON.stringify({ direction, paddle })
 			})
 		}
 		catch(err){
@@ -63,13 +83,21 @@ export function showGameView() {
         if(gameInterval) return;
 
 		gameInterval = window.setInterval(async () => { 
-
 			try{
 				const res = await fetch('/api/game/init');
 				const data = await res.json();
 
 				document.getElementById('game-number')!.textContent = 
 					`Ball: (${data.ball.x.toFixed(0)}, ${data.ball.y.toFixed(0)})`;
+				document.getElementById('score')!.textContent = 
+					`Score: ${data.score1} - ${data.score2}`;
+
+				if(data.gameOver){
+					document.getElementById('game-over')!.textContent = 
+						`Game Over ! Winner: ${data.score >= 5 ? 'Player 1': 'Player 2'}`;
+					clearInterval(gameInterval!);
+					gameInterval = null;
+				}
 				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
@@ -90,7 +118,7 @@ export function showGameView() {
 			catch(err){
 				console.error('Error fetching game number', err);
 			}
-		}, 50);
+		}, 25);
     });
 	
 	document.getElementById('simulate-game')?.addEventListener('click', async() => {

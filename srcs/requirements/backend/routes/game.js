@@ -17,19 +17,29 @@ export default async function gameRoutes(fastify, opts) {
     const gameState = {
         paddle1: { x: 10, y: 120, width: 10, height:60}, 
         paddle2: { x: 380, y: 120, width: 10, height: 60},
-        ball: {x: 200, y: 150, radius: 8, dx: 2, dy:2}
+        ball: {x: 200, y: 150, radius: 8, dx: 1, dy: 1, speed: 3},
+        score1: 0,
+        score2: 0,
+        gameOver: false
     }
     fastify.get('/game/init', async (request, reply) => {
-        gameState.ball.x += gameState.ball.dx;
-        gameState.ball.y += gameState.ball.dy;
+        if(gameState.gameOver){
+            return gameState;
+        }
+        gameState.ball.x += gameState.ball.dx * gameState.ball.speed;
+        gameState.ball.y += gameState.ball.dy * gameState.ball.speed;
         
         if(checkPaddleCollision(gameState.ball, gameState.paddle1)) {
             gameState.ball.dx *= -1;
+            gameState.ball.speed *= 1.1;
+            gameState.ball.speed = Math.min(gameState.ball.speed, 12);
             gameState.ball.x = gameState.paddle1.x + gameState.paddle1.width + gameState.ball.radius;
         }
 
         if(checkPaddleCollision(gameState.ball, gameState.paddle2)) {
             gameState.ball.dx *= -1;
+            gameState.ball.speed *= 1.1;
+            gameState.ball.speed = Math.min(gameState.ball.speed, 12);
             gameState.ball.x = gameState.paddle2.x - gameState.ball.radius;
         }
 
@@ -37,21 +47,48 @@ export default async function gameRoutes(fastify, opts) {
             gameState.ball.dy *= -1;
         }
 
-        if(gameState.ball.x <= 0 || gameState.ball.x >= canvasWidth) {
-            gameState.ball.dx *= -1;
+        if(gameState.ball.x <= 0) {
+            gameState.score1 += 1;
+            gameState.ball.x = canvasWidth / 2;
+            gameState.ball.y = canvasHeight / 2;
+            gameState.ball.dx = 2;
+            gameState.ball.dy = 2;
+            gameState.ball.speed = 2;
+        }
+        if(gameState.ball.x >= canvasWidth){
+            gameState.score2 += 1;
+            gameState.ball.x = canvasWidth / 2;
+            gameState.ball.y = canvasHeight / 2;
+            gameState.ball.dx = -2;
+            gameState.ball.dy = 2;
+            gameState.ball.speed = 2;
+        }
+
+        if(gameState.score1 >= 5 || gameState.score2 >= 5) {
+            gameState.gameOver = true;
         }
         return gameState;
     });
 
     fastify.post('/game/move-paddle', async (request, reply) => {
-        const { direction } = request.body;
+        const { direction, paddle } = request.body;
         const speed = 10;
 
-        if (direction === 'up') {
-            gameState.paddle1.y = Math.max(0, gameState.paddle1.y - speed);
-        } 
-        if (direction === 'down') {
-            gameState.paddle1.y = Math.min(canvasHeight - gameState.paddle1.height, gameState.paddle1.y + speed);
+        if (paddle === 1){
+            if (direction === 'up') {
+                gameState.paddle1.y = Math.max(0, gameState.paddle1.y - speed);
+            }
+            if (direction === 'down') {
+                gameState.paddle1.y = Math.min(canvasHeight - gameState.paddle1.height, gameState.paddle1.y + speed);
+            }
+        }
+        if (paddle === 2){
+            if (direction === 'up') {
+                gameState.paddle2.y = Math.max(0, gameState.paddle2.y - speed);
+            }
+            if (direction === 'down') {
+                gameState.paddle2.y = Math.min(canvasHeight - gameState.paddle2.height, gameState.paddle2.y + speed);
+            }        
         }
         reply.send({ status: true });
     });
