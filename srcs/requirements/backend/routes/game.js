@@ -39,6 +39,7 @@ export default async function gameRoutes(fastify, opts) {
     }
 
     fastify.post('/game/restart', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+        console.log("request.user:", request.user);
         const userId = request.user.id;
         const newGameState = createInitialGameState();
         userGameStates.set(userId, newGameState);

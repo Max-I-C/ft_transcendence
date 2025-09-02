@@ -158,6 +158,7 @@ export function showGameView() {
 	}
 
     function initLocalGame() {
+        const token = localStorage.getItem('token');
         const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d')!;
         let gameInterval: number | null = null;
@@ -186,10 +187,12 @@ export function showGameView() {
             if(!direction || !paddle) return;
 
             try{
+                const token = localStorage.getItem('token');
                 await fetch('/api/game/move-paddle', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ direction, paddle })
                 })
@@ -203,7 +206,13 @@ export function showGameView() {
             if (gameInterval) return;
             gameInterval = window.setInterval(async () => {
                 try {
-                    const res = await fetch('/api/game/init');
+                    const token = localStorage.getItem('token');
+                    const res = await fetch('/api/game/init', {                    
+                        headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                        },
+                    });
                     const data = await res.json();
 
                     document.getElementById('score')!.textContent = `Score: ${data.score1} - ${data.score2}`;
@@ -234,8 +243,20 @@ export function showGameView() {
 
         document.getElementById('restart-game')?.addEventListener('click', async () => {
             try {
-                await fetch("/api/game/restart", { method: "POST" });
+                const token = localStorage.getItem('token');
+                await fetch('/api/game/restart', { 
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+                if (gameInterval) {
+                    clearInterval(gameInterval);
+                    gameInterval = null;
+                }
                 document.getElementById("game-over")!.textContent = "";
+                document.getElementById("score")!.textContent = "Score: 0 - 0";
+                document.getElementById("play-game")?.click();
             } catch (err) {
                 console.error("Error restarting game", err);
             }
