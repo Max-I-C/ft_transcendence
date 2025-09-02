@@ -16,6 +16,7 @@ export function showGameView() {
 		<div class="welcome-bubble">
             <button id="simulate-game" class="button" type="button">Simulate game result</button>
             <button id="play-game" class="button" type="button">Play game</button>
+			<button id="restart-game" class="button" type="button">Restart game</button>
             <p id="game-number">Number: --</p>
             <p>Let's play</p>
 			<p id="score">Score: 0 - 0</p>
@@ -38,8 +39,6 @@ export function showGameView() {
 	document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
 	document.getElementById('logout-link')!.addEventListener('click', () => logout());
 	
-	// Je penses que la strat c'est d'avoir un websocket qui envois une requetes backend pour dire que l'utilisateur a bouger la P1. Et que ca change sa coter frontend. Par contre je sais pas comment gerer les colision alors //
-
 	document.addEventListener('keydown', async (e) => {
 		if(!gameInterval) return;
 		let direction = null;
@@ -78,7 +77,18 @@ export function showGameView() {
 			console.error('Error moving paddle', err);
 		}
 	});
-	
+
+	document.getElementById('restart-game')?.addEventListener('click', async () => {
+    	try {
+    	    const res = await fetch("/api/game/restart", {method: "POST"});
+    	    const data = await res.json();
+
+    	    document.getElementById("game-over")!.textContent = "";
+    	} 
+		catch (err) {
+    	    console.error("Error restarting game", err);
+    	}
+	});
 	document.getElementById('play-game')?.addEventListener('click', async () => {
         if(gameInterval) return;
 
@@ -93,10 +103,12 @@ export function showGameView() {
 					`Score: ${data.score1} - ${data.score2}`;
 
 				if(data.gameOver){
-					document.getElementById('game-over')!.textContent = 
-						`Game Over ! Winner: ${data.score >= 5 ? 'Player 1': 'Player 2'}`;
-					clearInterval(gameInterval!);
-					gameInterval = null;
+					 const winner = data.score1 >= 5 ? "Player 1" : "Player 2";
+    					document.getElementById("game-over")!.textContent = `Game Over ! Winner: ${winner}`;
+					if (gameInterval) {
+    					clearInterval(gameInterval);
+    					gameInterval = null;
+					}
 				}
 				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);

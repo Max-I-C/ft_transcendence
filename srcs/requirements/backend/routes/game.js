@@ -1,5 +1,5 @@
 
-
+// -- Definition of the variable we will use in the backend -- //
 function checkPaddleCollision(ball, paddle){
     const closestx = Math.max(paddle.x, Math.min(ball.x, paddle.x + paddle.width));
     const closesty = Math.max(paddle.y, Math.min(ball.y, paddle.y + paddle.height));
@@ -9,6 +9,7 @@ function checkPaddleCollision(ball, paddle){
     return(dx * dx + dy * dy) <= (ball.radius * ball.radius);
 }
 
+// -- All functions -- //
 export default async function gameRoutes(fastify, opts) {
     const canvasWidth = 400;
     const canvasHeight = 300;
@@ -22,6 +23,17 @@ export default async function gameRoutes(fastify, opts) {
         score2: 0,
         gameOver: false
     }
+
+    fastify.post('/game/restart', async (request, reply) => {
+        gameState.paddle1 = { x: 10, y: 120, width: 10, height: 60 }; 
+        gameState.paddle2 = { x: 380, y: 120, width: 10, height: 60 };
+        gameState.ball = { x: 200, y: 150, radius: 8, dx: 1, dy: 1, speed: 3 };
+        gameState.score1 = 0;
+        gameState.score2 = 0;
+        gameState.gameOver = false;
+        reply.send(gameState);
+    });
+
     fastify.get('/game/init', async (request, reply) => {
         if(gameState.gameOver){
             return gameState;
@@ -48,7 +60,7 @@ export default async function gameRoutes(fastify, opts) {
         }
 
         if(gameState.ball.x <= 0) {
-            gameState.score1 += 1;
+            gameState.score2 += 1;
             gameState.ball.x = canvasWidth / 2;
             gameState.ball.y = canvasHeight / 2;
             gameState.ball.dx = 2;
@@ -56,7 +68,7 @@ export default async function gameRoutes(fastify, opts) {
             gameState.ball.speed = 2;
         }
         if(gameState.ball.x >= canvasWidth){
-            gameState.score2 += 1;
+            gameState.score1 += 1;
             gameState.ball.x = canvasWidth / 2;
             gameState.ball.y = canvasHeight / 2;
             gameState.ball.dx = -2;
