@@ -1,4 +1,3 @@
-
 // -- Definition of the variable we will use in the backend -- //
 function checkPaddleCollision(ball, paddle){
     const closestx = Math.max(paddle.x, Math.min(ball.x, paddle.x + paddle.width));
@@ -8,6 +7,8 @@ function checkPaddleCollision(ball, paddle){
 
     return(dx * dx + dy * dy) <= (ball.radius * ball.radius);
 }
+
+const lobbies = []; // Liste des lobbies PVP
 
 // -- All functions -- //
 export default async function gameRoutes(fastify, opts) {
@@ -103,5 +104,30 @@ export default async function gameRoutes(fastify, opts) {
             }        
         }
         reply.send({ status: true });
+    });
+
+    fastify.post('/game/pvp/lobby', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+        const userId = req.user.id;
+        let lobby = lobbies.find(l => l.players.length === 1 && l.status === 'waiting');
+        if (lobby) {
+            lobby.players.push(userId);
+            lobby.status = 'ready';
+            reply.send({ lobbyId: lobby.id, joined: true });
+        } 
+        else {
+            const newLobby = {
+                id: Date.now().toString(),
+                players: [userId],
+                status: 'waiting'
+            };
+            lobbies.push(newLobby);
+            reply.send({ lobbyId: newLobby.id, joined: false });
+        }
+    });
+
+    fastify.get('/game/pvp/lobby/:id', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+        const lobby = lobbies.find(l => l.id === req.params.id);
+        if (!lobby) return reply.code(404).send({ error: 'Lobby not found' });
+        reply.send(lobby);
     });
 }

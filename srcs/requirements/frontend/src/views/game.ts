@@ -73,28 +73,27 @@ export function showGameView() {
     });
 
 	function initPvpGame() {
-		document.getElementById('simulate-game')?.addEventListener('click', async () => {
-            const token = localStorage.getItem('token');
-            const matchData = {
-                match_score: '2-3',
-                result: 'win',
-                points_change: +20
-            };
-            try {
-                const res = await fetch('/api/simulate-match', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(matchData)
-                });
-                const data = await res.json();
-                console.log('✅ Match added:', data);
-            } catch (err) {
-                console.error('Error during simulation', err);
-            }
-        });
+		const app = document.getElementById('pvp-game-area')!;
+		app.innerHTML = `
+			<div class="pvp-lobby">
+				<button id="join-pvp" class="game-button">🔗 Join/Create PvP Lobby</button>
+				<div id="lobby-status"></div>
+			</div>
+		`;
+
+		document.getElementById('join-pvp')!.addEventListener('click', async () => {
+			const token = localStorage.getItem('token');
+			const res = await fetch('/api/game/pvp/lobby', {
+				method: 'POST',
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			const data = await res.json();
+			if (data.joined) {
+				document.getElementById('lobby-status')!.innerHTML = `<span style="color:green;">Lobby found! Waiting for game to start...</span>`;
+			} else {
+				document.getElementById('lobby-status')!.innerHTML = `<span style="color:orange;">Lobby created. Waiting for another player...</span>`;
+			}
+		});
 	}
 
     function initLocalGame() {
