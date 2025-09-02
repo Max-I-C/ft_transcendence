@@ -3,3 +3,5 @@
 # Faire des verif sur les acces sans token 
 # Verifier qui gagne
 # Faire gaffe la police custom
+
+# Pour les lobby mettre en place les requetes WebSocket pour avertir l'autre utilisateur que quelqu'un un join. 
