@@ -989,3 +989,61 @@ button
 .status-indicator.offline {
   background-color: gray;
 }
+
+/* Game choice cards */
+.game-choice-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  margin-top: 5rem;
+}
+
+.game-card {
+    position: relative;
+    width: 320px;
+    height: 180px;
+    background: linear-gradient(135deg, #222, #422F51);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    color: #fff;
+    padding: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.5s ease-in-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.game-card h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.game-card p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* Ajout du GIF au hover */
+.game-card:hover {
+    background: url('/views/images/card-hover.gif') center center / cover no-repeat;
+    transform: scale(1.07) translateY(-10px);
+    box-shadow: 0 16px 48px rgba(106, 76, 255, 0.25);
+}
+
+.game-card.disabled:hover {
+    background: none; /* Pas de GIF pour les cartes désactivées */
+    transform: none;
+    box-shadow: none;
+}
+
+/* Ajout du GIF au hover pour la carte PvP */
+.game-card#pvp-game-card:hover {
+    background: url('/views/images/card-pvp-hover.gif') center center / cover no-repeat;
+    transform: scale(1.07) translateY(-10px);
+    box-shadow: 0 16px 48px rgba(255, 76, 76, 0.25); /* Ombre rouge pour différencier */
+}
