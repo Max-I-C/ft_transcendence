@@ -26,19 +26,26 @@ export function showGameView() {
             </div>
         </div>
         <div id="local-game-area" style="display:none;">
-            <div class="welcome-bubble">
-                <button id="simulate-game" class="button" type="button">Simulate game result</button>
-                <button id="play-game" class="button" type="button">Play game</button>
-                <button id="restart-game" class="button" type="button">Restart game</button>
-                <p id="game-number">Number: --</p>
-                <p>Let's play</p>
-                <p id="score">Score: 0 - 0</p>
-                <p id="game-over" style="color:red; font-weight:bold;"></p>
-                <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
-                    <canvas id="pong-canvas" width="400" height="300" style="background: #222; border-radius: 8px;"></canvas>
+            <div class="game-interface">
+                <div class="game-header">
+                    <h2>Local Game</h2>
+                    <p id="game-over" class="game-over-message"></p>
+                </div>
+                <div class="game-canvas-container">
+                    <canvas id="pong-canvas" width="400" height="300"></canvas>
+                </div>
+                <div class="game-controls">
+                    <button id="play-game" class="game-button">▶️ Play Game</button>
+                    <button id="restart-game" class="game-button">🔄 Restart Game</button>
+                </div>
+                <div class="game-score">
+                    <p id="score">Score: 0 - 0</p>
                 </div>
             </div>
         </div>
+		<div id="pvp-game-area" style="display:none;">
+			<button id="simulate-game" class="game-button">🎮 Simulate Game</button>
+		</div>
     `;
 
     // Navigation
@@ -53,34 +60,49 @@ export function showGameView() {
     const localCard = document.getElementById('local-game-card')!;
     const pvpCard = document.getElementById('pvp-game-card')!;
 
-    localCard.addEventListener('mouseenter', () => {
-        localCard.classList.add('active');
-    });
-    localCard.addEventListener('mouseleave', () => {
-        localCard.classList.remove('active');
-    });
     localCard.addEventListener('click', () => {
         (document.querySelector('.game-choice-container') as HTMLElement)!.style.display = 'none';
         document.getElementById('local-game-area')!.style.display = 'block';
         initLocalGame();
     });
 
-    pvpCard.addEventListener('mouseenter', () => {
-        pvpCard.classList.add('active');
-    });
-    pvpCard.addEventListener('mouseleave', () => {
-        pvpCard.classList.remove('active');
-    });
     pvpCard.addEventListener('click', () => {
-        alert('PvP mode is coming soon!');
+        (document.querySelector('.game-choice-container') as HTMLElement)!.style.display = 'none';
+		document.getElementById('pvp-game-area')!.style.display = 'block';
+		initPvpGame();
     });
+
+	function initPvpGame() {
+		document.getElementById('simulate-game')?.addEventListener('click', async () => {
+            const token = localStorage.getItem('token');
+            const matchData = {
+                match_score: '2-3',
+                result: 'win',
+                points_change: +20
+            };
+            try {
+                const res = await fetch('/api/simulate-match', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(matchData)
+                });
+                const data = await res.json();
+                console.log('✅ Match added:', data);
+            } catch (err) {
+                console.error('Error during simulation', err);
+            }
+        });
+	}
 
     function initLocalGame() {
         const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d')!;
         let gameInterval: number | null = null;
-
-        document.addEventListener('keydown', async (e) => {
+	
+		document.addEventListener('keydown', async (e) => {
             if(!gameInterval) return;
             let direction = null;
             let paddle = null;
@@ -117,37 +139,24 @@ export function showGameView() {
             }
         });
 
-        document.getElementById('restart-game')?.addEventListener('click', async () => {
-            try {
-                const res = await fetch("/api/game/restart", {method: "POST"});
-                const data = await res.json();
-                document.getElementById("game-over")!.textContent = "";
-            } 
-            catch (err) {
-                console.error("Error restarting game", err);
-            }
-        });
         document.getElementById('play-game')?.addEventListener('click', async () => {
-            if(gameInterval) return;
-            gameInterval = window.setInterval(async () => { 
-                try{
+            if (gameInterval) return;
+            gameInterval = window.setInterval(async () => {
+                try {
                     const res = await fetch('/api/game/init');
                     const data = await res.json();
 
-                    document.getElementById('game-number')!.textContent = 
-                        `Ball: (${data.ball.x.toFixed(0)}, ${data.ball.y.toFixed(0)})`;
-                    document.getElementById('score')!.textContent = 
-                        `Score: ${data.score1} - ${data.score2}`;
+                    document.getElementById('score')!.textContent = `Score: ${data.score1} - ${data.score2}`;
 
-                    if(data.gameOver){
+                    if (data.gameOver) {
                         const winner = data.score1 >= 5 ? "Player 1" : "Player 2";
-                        document.getElementById("game-over")!.textContent = `Game Over ! Winner: ${winner}`;
+                        document.getElementById("game-over")!.textContent = `Game Over! Winner: ${winner}`;
                         if (gameInterval) {
                             clearInterval(gameInterval);
                             gameInterval = null;
                         }
                     }
-                    
+
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.fillStyle = '#222';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -157,33 +166,18 @@ export function showGameView() {
                     ctx.beginPath();
                     ctx.arc(data.ball.x, data.ball.y, data.ball.radius, 0, Math.PI * 2);
                     ctx.fill();
-                }
-                catch(err){
-                    console.error('Error fetching game number', err);
+                } catch (err) {
+                    console.error('Error fetching game data', err);
                 }
             }, 25);
         });
-        document.getElementById('simulate-game')?.addEventListener('click', async() => {
-            const token = localStorage.getItem('token');
-            const matchData = {
-                match_score: '2-3',
-                result: 'win',
-                points_change: +20
-            };
-            try{
-                const res = await fetch('/api/simulate-match', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(matchData)
-                });
-                const data = await res.json();
-                console.log('✅ Match added :', data);
-            }
-            catch(err){
-                console.error('Error during simulation', err);
+
+        document.getElementById('restart-game')?.addEventListener('click', async () => {
+            try {
+                await fetch("/api/game/restart", { method: "POST" });
+                document.getElementById("game-over")!.textContent = "";
+            } catch (err) {
+                console.error("Error restarting game", err);
             }
         });
     }
