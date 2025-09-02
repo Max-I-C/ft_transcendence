@@ -107,6 +107,9 @@ export default async function gameRoutes(fastify, opts) {
         reply.send({ status: true });
     });
 
+
+
+
     fastify.post('/game/pvp/lobby', { preValidation: [fastify.authenticate] }, async (req, reply) => {
         const userId = req.user.id;
         const username = req.user.username;
@@ -116,7 +119,7 @@ export default async function gameRoutes(fastify, opts) {
             lobby.players.push({ id: userId, username });
             lobby.status = 'ready';
 
-        const player1Socket = connectedUsers.get(lobby.players[0].id);
+        const player1Socket = connectedUsers.get(String(lobby.players[0].id));
         if (player1Socket) {
             console.log(`Notifying Player 1 (${lobby.players[0].username}) that Player 2 (${username}) joined.`);
             player1Socket.send(JSON.stringify({
