@@ -28,6 +28,20 @@ export default async function websocketRoutes(fastify) {
           console.log(`User connected: ${currentUser}`);
         }
 
+        if (msg.type === 'player_joined') {
+          const lobby = lobbies.find(l => l.id === msg.lobbyId);
+          if (lobby && lobby.players.length === 2) {
+            const player1Socket = connectedUsers.get(String(lobby.players[0].id));
+            if (player1Socket) {
+              player1Socket.send(JSON.stringify({
+                type: 'player_joined',
+                lobbyId: lobby.id,
+                player2: lobby.players[1].username
+              }));
+            }
+          }
+        }
+
         if (msg.type === 'friend_request') {
           const payload = fastify.jwt.verify(msg.token);
           socket.send(JSON.stringify({

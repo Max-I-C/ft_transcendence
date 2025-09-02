@@ -1,6 +1,39 @@
 import { navigateTo } from '../main.js';
 import { logout } from './auth.js';
+import { initializeWebSocket } from '../utils/webSocketUtils.js';
 
+function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
+    const player1 = players[0]?.username || 'Waiting...';
+    const player2 = players[1]?.username || 'Waiting...';
+
+    document.getElementById('player1')!.textContent = player1;
+    document.getElementById('player2')!.textContent = player2;
+}
+
+function listenToGameWebSocket() {
+    const socket = initializeWebSocket();
+
+    socket.addEventListener('message', (event) => {
+        try {
+            const msg = JSON.parse(event.data);
+
+            // Gestion des événements spécifiques au jeu
+            if (msg.type === 'player_joined') {
+                console.log(`Player joined lobby: ${msg.lobbyId}`);
+                document.getElementById('player2')!.textContent = msg.player2;
+                document.getElementById('lobby-status')!.innerHTML = `<span style="color:green;">Player 2 has joined! Ready to start.</span>`;
+            }
+
+            if (msg.type === 'game_start') {
+                console.log(`Game started in lobby: ${msg.lobbyId}`);
+                document.getElementById('lobby-status')!.innerHTML = `<span style="color:blue;">Game is starting...</span>`;
+            }
+        } 
+        catch (err) {
+            console.error('Failed to parse WebSocket message:', err);
+        }
+    });
+}
 export function showGameView() {
     const app = document.getElementById('app')!;
     app.innerHTML = `
@@ -44,8 +77,15 @@ export function showGameView() {
             </div>
         </div>
 		<div id="pvp-game-area" style="display:none;">
+            <div class="pvp-lobby">
+                <button id="join-pvp" class="game-button">🔗 Join/Create PvP Lobby</button>
+                <div id="lobby-status"></div>
+                <div id="lobby-players">
+                    <p><strong>Player 1:</strong> <span id="player1">Waiting...</span></p>
+                    <p><strong>Player 2:</strong> <span id="player2">Waiting...</span></p>
+                </div>
+            </div>
 			<button id="simulate-game" class="game-button">🎮 Simulate Game</button>
-		    <button id="join-pvp" class="game-button">🔗 Join/Create PvP Lobby</button>
             <div id="lobby-status"></div>
         </div>
     `;
@@ -75,6 +115,7 @@ export function showGameView() {
     });
 
 	function initPvpGame() {
+        listenToGameWebSocket();
 		const app = document.getElementById('pvp-game-area')!;
 
 		document.getElementById('join-pvp')!.addEventListener('click', async () => {
@@ -89,6 +130,7 @@ export function showGameView() {
 			} else {
 				document.getElementById('lobby-status')!.innerHTML = `<span style="color:orange;">Lobby created. Waiting for another player...</span>`;
 			}
+            updateLobbyPlayers(data.players);
 		});
 
         document.getElementById('simulate-game')?.addEventListener('click', async () => {

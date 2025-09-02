@@ -1,3 +1,4 @@
+import { connectedUsers } from '../connectedUsers.js';
 // -- Definition of the variable we will use in the backend -- //
 function checkPaddleCollision(ball, paddle){
     const closestx = Math.max(paddle.x, Math.min(ball.x, paddle.x + paddle.width));
@@ -108,26 +109,41 @@ export default async function gameRoutes(fastify, opts) {
 
     fastify.post('/game/pvp/lobby', { preValidation: [fastify.authenticate] }, async (req, reply) => {
         const userId = req.user.id;
+        const username = req.user.username;
+
         let lobby = lobbies.find(l => l.players.length === 1 && l.status === 'waiting');
         if (lobby) {
-            lobby.players.push(userId);
+            lobby.players.push({ id: userId, username });
             lobby.status = 'ready';
-            reply.send({ lobbyId: lobby.id, joined: true });
+
+        const player1Socket = connectedUsers.get(lobby.players[0].id);
+        if (player1Socket) {
+            console.log(`Notifying Player 1 (${lobby.players[0].username}) that Player 2 (${username}) joined.`);
+            player1Socket.send(JSON.stringify({
+                type: 'player_joined',
+                lobbyId: lobby.id,
+                player2: username
+            }));
         } 
         else {
+        console.error(`Player 1 socket not found for user ID: ${lobby.players[0].id}`);
+        }
+
+            reply.send({ lobbyId: lobby.id, joined: true, players: lobby.players });
+        } else {
             const newLobby = {
                 id: Date.now().toString(),
-                players: [userId],
+                players: [{ id: userId, username }],
                 status: 'waiting'
             };
             lobbies.push(newLobby);
-            reply.send({ lobbyId: newLobby.id, joined: false });
+            reply.send({ lobbyId: newLobby.id, joined: false, players: newLobby.players });
         }
     });
 
     fastify.get('/game/pvp/lobby/:id', { preValidation: [fastify.authenticate] }, async (req, reply) => {
         const lobby = lobbies.find(l => l.id === req.params.id);
         if (!lobby) return reply.code(404).send({ error: 'Lobby not found' });
-        reply.send(lobby);
+        reply.send({ id: lobby.id, players: lobby.players, status: lobby.status });
     });
 }
