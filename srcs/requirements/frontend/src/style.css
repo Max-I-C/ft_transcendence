@@ -1028,11 +1028,14 @@ button
     font-size: 1.1rem;
 }
 
-/* Ajout du GIF au hover */
 .game-card:hover {
-    background: url('/views/images/card-hover.gif') center center / cover no-repeat;
     transform: scale(1.07) translateY(-10px);
     box-shadow: 0 16px 48px rgba(106, 76, 255, 0.25);
+}
+
+/* Ajout du GIF au hover */
+.game-card#local-game-card:hover {
+    background: url('/views/images/card-hover.gif') center center / cover no-repeat;
 }
 
 .game-card.disabled:hover {
