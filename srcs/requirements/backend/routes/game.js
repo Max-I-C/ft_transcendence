@@ -99,6 +99,11 @@ setInterval(() => {
                     }));
                 }
             });
+            if(lobby.gameState.gameOver) {
+                console.log('Removing lobby');
+                const index = lobbies.findIndex(l => l.id === lobby.id);
+                if (index !== -1) lobbies.splice(index, 1);
+            }
         }
     });
 }, 1000 / 60); // 60 FPS serveur

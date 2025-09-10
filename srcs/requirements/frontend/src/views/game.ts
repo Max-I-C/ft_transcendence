@@ -2,6 +2,9 @@ import { navigateTo } from '../main.js';
 import { logout } from './auth.js';
 import { initializeWebSocket } from '../utils/webSocketUtils.js';
 
+let pvpSocket: WebSocket | null = null;
+let currentLobbyId: string | null = null;
+
 function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     const player1 = players[0]?.username || 'Waiting...';
     const player2 = players[1]?.username || 'Waiting...';
@@ -10,8 +13,12 @@ function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     document.getElementById('player2')!.textContent = player2;
 }
 
-function listenToGameWebSocket() {
+function listenToGameWebSocket(lobbyId: string) {
+    if (pvpSocket) {
+        pvpSocket.close();
+    }
     const socket = initializeWebSocket();
+    pvpSocket = socket;
     const canvas = document.getElementById('pong-canvas-pvp') as HTMLCanvasElement;
     const ctx = canvas?.getContext('2d');
 
@@ -19,6 +26,8 @@ function listenToGameWebSocket() {
         try {
             const msg = JSON.parse(event.data);
 
+            if (msg.lobbyId && msg.lobbyId !== lobbyId) return;
+            
             if (msg.type === 'player_joined') {
                 document.getElementById('player2')!.textContent = msg.player2;
                 document.getElementById('lobby-status')!.innerHTML =
@@ -153,7 +162,6 @@ export function showGameView() {
     });
 
 	function initPvpGame() {
-        listenToGameWebSocket();
 		const app = document.getElementById('pvp-game-area')!;
 
 		document.getElementById('join-pvp')!.addEventListener('click', async () => {
@@ -163,6 +171,9 @@ export function showGameView() {
 				headers: { 'Authorization': `Bearer ${token}` }
 			});
 			const data = await res.json();
+            currentLobbyId = data.lobbyId;
+            if(currentLobbyId)
+                listenToGameWebSocket(currentLobbyId);
 			if (data.joined) {
 				document.getElementById('lobby-status')!.innerHTML = `<span style="color:green;">Lobby found! Waiting for game to start...</span>`;
 			} else {

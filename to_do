@@ -1,10 +1,3 @@
-# Faire en sorte que le jeux arrete de tourner une fois que l'utilisateur quitte la page 
-# Faire des ajustements sur le gameplay pour le rendre plus friendly.
 # Faire des verif sur les acces sans token 
 # Verifier qui gagne
 # Faire gaffe la police custom
-
-# Pour les lobby mettre en place les requetes WebSocket pour avertir l'autre utilisateur que quelqu'un un join. 
-# Faire gaffe des requetes tourne en background au niveau du local game.
-
-# Maintenant il faut faire en sorte que le je puisse jouer seul le jeux s'affiche pour le moment.
