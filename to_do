@@ -6,3 +6,5 @@
 
 # Pour les lobby mettre en place les requetes WebSocket pour avertir l'autre utilisateur que quelqu'un un join. 
 # Faire gaffe des requetes tourne en background au niveau du local game.
+
+# Maintenant il faut faire en sorte que le je puisse jouer seul le jeux s'affiche pour le moment.

@@ -12,21 +12,50 @@ function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
 
 function listenToGameWebSocket() {
     const socket = initializeWebSocket();
+    const canvas = document.getElementById('pong-canvas-pvp') as HTMLCanvasElement;
+    const ctx = canvas?.getContext('2d');
 
     socket.addEventListener('message', (event) => {
         try {
             const msg = JSON.parse(event.data);
 
-            // Gestion des événements spécifiques au jeu
             if (msg.type === 'player_joined') {
-                console.log(`Player joined lobby: ${msg.lobbyId}`);
                 document.getElementById('player2')!.textContent = msg.player2;
-                document.getElementById('lobby-status')!.innerHTML = `<span style="color:green;">Player 2 has joined! Ready to start.</span>`;
+                document.getElementById('lobby-status')!.innerHTML =
+                    `<span style="color:green;">Player 2 has joined! Ready to start.</span>`;
             }
 
             if (msg.type === 'game_start') {
-                console.log(`Game started in lobby: ${msg.lobbyId}`);
-                document.getElementById('lobby-status')!.innerHTML = `<span style="color:blue;">Game is starting...</span>`;
+                document.getElementById('lobby-status')!.innerHTML =
+                    `<span style="color:blue;">Game is starting...</span>`;
+                document.getElementById('pvp-game-area')!.style.display = 'block';
+            }
+
+            // 🎮 Réception des frames du jeu envoyées par le backend
+            if (msg.type === 'game_update' && ctx) {
+                const state = msg.state;
+
+                // Met à jour le score
+                document.getElementById('score-pvp')!.textContent =
+                    `Score: ${state.score1} - ${state.score2}`;
+
+                // Si game over → affiche un message
+                if (state.gameOver) {
+                    const winner = state.score1 >= 5 ? "Player 1" : "Player 2";
+                    document.getElementById("game-over-pvp")!.textContent =
+                        `Game Over! Winner: ${winner}`;
+                }
+
+                // Redessine le canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#222';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(state.paddle1.x, state.paddle1.y, state.paddle1.width, state.paddle1.height);
+                ctx.fillRect(state.paddle2.x, state.paddle2.y, state.paddle2.width, state.paddle2.height);
+                ctx.beginPath();
+                ctx.arc(state.ball.x, state.ball.y, state.ball.radius, 0, Math.PI * 2);
+                ctx.fill();
             }
         } 
         catch (err) {
@@ -34,6 +63,7 @@ function listenToGameWebSocket() {
         }
     });
 }
+
 export function showGameView() {
     const app = document.getElementById('app')!;
     app.innerHTML = `
@@ -85,8 +115,14 @@ export function showGameView() {
                     <p><strong>Player 2:</strong> <span id="player2">Waiting...</span></p>
                 </div>
             </div>
-			<button id="simulate-game" class="game-button">🎮 Simulate Game</button>
-            <div id="lobby-status"></div>
+            <div class="game-canvas-container">
+                <canvas id="pong-canvas-pvp" width="400" height="300"></canvas> 
+            </div>
+            <div class="game-score">
+                <p id="score-pvp">Score: 0 - 0</p>
+            </div>
+            <p id="game-over-pvp" class="game-over-message"></p>
+            <button id="simulate-game" class="game-button">🎮 Simulate Game</button>
         </div>
     `;
 
@@ -153,6 +189,29 @@ export function showGameView() {
                 console.log('✅ Match added:', data);
             } catch (err) {
                 console.error('Error during simulation', err);
+            }
+        });
+        document.addEventListener('keydown', async (e) => {
+            let direction = null;
+
+            if (e.key === 'w') direction = 'up';
+            if (e.key === 's') direction = 'down';
+
+            if (!direction) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                await fetch('/api/game/pvp/move-paddle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ direction })
+                });
+            }   
+            catch (err) {
+                console.error('Error moving paddle in PvP', err);
             }
         });
 	}

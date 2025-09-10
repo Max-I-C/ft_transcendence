@@ -2,6 +2,12 @@ import { connectedUsers } from '../connectedUsers.js';
 // -- Definition of the variable we will use in the backend -- //
 const lobbies = []; // Liste des lobbies PVP
 const userGameStates = new Map();
+const createLobby = (id, player) => ({
+    id,
+    players: [player],
+    status: 'waiting',
+    gameState: createInitialGameState()
+});
 
 function checkPaddleCollision(ball, paddle){
     const closestx = Math.max(paddle.x, Math.min(ball.x, paddle.x + paddle.width));
@@ -22,6 +28,80 @@ function createInitialGameState() {
         gameOver: false
     };
 }
+
+function updateGame(gameState) {
+    const canvasWidth = 400;
+    const canvasHeight = 300;
+
+    if (gameState.gameOver) return;
+
+    // Déplacement de la balle
+    gameState.ball.x += gameState.ball.dx * gameState.ball.speed;
+    gameState.ball.y += gameState.ball.dy * gameState.ball.speed;
+
+    // Collision avec paddle gauche
+    if (checkPaddleCollision(gameState.ball, gameState.paddle1)) {
+        gameState.ball.dx *= -1;
+        gameState.ball.speed = Math.min(gameState.ball.speed * 1.1, 12);
+        gameState.ball.x = gameState.paddle1.x + gameState.paddle1.width + gameState.ball.radius;
+    }
+
+    // Collision avec paddle droit
+    if (checkPaddleCollision(gameState.ball, gameState.paddle2)) {
+        gameState.ball.dx *= -1;
+        gameState.ball.speed = Math.min(gameState.ball.speed * 1.1, 12);
+        gameState.ball.x = gameState.paddle2.x - gameState.ball.radius;
+    }
+
+    // Collision haut/bas
+    if (gameState.ball.y <= 0 || gameState.ball.y >= canvasHeight) {
+        gameState.ball.dy *= -1;
+    }
+
+    // Sortie à gauche
+    if (gameState.ball.x <= 0) {
+        gameState.score2 += 1;
+        resetBall(gameState, 1);
+    }
+
+    // Sortie à droite
+    if (gameState.ball.x >= canvasWidth) {
+        gameState.score1 += 1;
+        resetBall(gameState, -1);
+    }
+
+    // Fin de partie
+    if (gameState.score1 >= 5 || gameState.score2 >= 5) {
+        gameState.gameOver = true;
+    }
+}
+
+function resetBall(gameState, direction) {
+    gameState.ball.x = 200;
+    gameState.ball.y = 150;
+    gameState.ball.dx = direction * 2;
+    gameState.ball.dy = 2;
+    gameState.ball.speed = 2;
+}
+
+
+setInterval(() => {
+    lobbies.forEach(lobby => {
+        if (lobby.status === 'ready' && lobby.gameState) {
+            updateGame(lobby.gameState);
+            lobby.players.forEach(p => {
+                const socket = connectedUsers.get(String(p.id));
+                if (socket) {
+                    socket.send(JSON.stringify({
+                        type: 'game_update',
+                        lobbyId: lobby.id,
+                        state: lobby.gameState
+                    }));
+                }
+            });
+        }
+    });
+}, 1000 / 60); // 60 FPS serveur
 
 // -- All functions -- //
 export default async function gameRoutes(fastify, opts) {
@@ -140,22 +220,30 @@ export default async function gameRoutes(fastify, opts) {
         if (lobby) {
             lobby.players.push({ id: userId, username });
             lobby.status = 'ready';
+            lobby.gameState = createInitialGameState();
 
-        const player1Socket = connectedUsers.get(String(lobby.players[0].id));
-        if (player1Socket) {
-            console.log(`Notifying Player 1 (${lobby.players[0].username}) that Player 2 (${username}) joined.`);
-            player1Socket.send(JSON.stringify({
-                type: 'player_joined',
-                lobbyId: lobby.id,
-                player2: username
-            }));
-        } 
-        else {
-        console.error(`Player 1 socket not found for user ID: ${lobby.players[0].id}`);
+            const player1Socket = connectedUsers.get(String(lobby.players[0].id));
+            if (player1Socket) {
+                console.log(`Notifying Player 1 (${lobby.players[0].username}) that Player 2 (${username}) joined.`);
+                player1Socket.send(JSON.stringify({
+                    type: 'player_joined',
+                    lobbyId: lobby.id,
+                    player2: username
+                }));
+            }
+            lobby.players.forEach(p => {
+                const socket = connectedUsers.get(String(p.id));
+                if(socket) {
+                    socket.send(JSON.stringify({
+                        type: 'game_start',
+                        lobbyId: lobby.id,
+                        state: lobby.gameState
+                    }));
+                }
+            });
+            reply.send({ lobbyId: lobby.id, joined: true, players: lobby.players});
         }
-
-            reply.send({ lobbyId: lobby.id, joined: true, players: lobby.players });
-        } else {
+        else {
             const newLobby = {
                 id: Date.now().toString(),
                 players: [{ id: userId, username }],
@@ -164,6 +252,23 @@ export default async function gameRoutes(fastify, opts) {
             lobbies.push(newLobby);
             reply.send({ lobbyId: newLobby.id, joined: false, players: newLobby.players });
         }
+    });
+
+    fastify.post('/game/pvp/move-paddle', {preValidation: [fastify.authenticate]}, async (req, reply) => {
+        const { direction } = req.body;
+        const userId = req.user.id;
+
+        const lobby = lobbies.find(l => l.players.some(p => p.id === userId) && l.status === 'ready');
+        if(!lobby || !lobby.gameState) return reply.code(404).send({ error: 'Lobby not found or game not ready' });
+
+        const isPlayer1 = lobby.players[0].id === userId;
+        const paddle = isPlayer1 ? lobby.gameState.paddle1 : lobby.gameState.paddle2;
+        const speed = 10;
+
+        if (direction === 'up') paddle.y = Math.max(0, paddle.y - speed);
+        if (direction === 'down') paddle.y = Math.min(300 - paddle.height, paddle.y + speed);
+
+        reply.send({ ok: true });
     });
 
     fastify.get('/game/pvp/lobby/:id', { preValidation: [fastify.authenticate] }, async (req, reply) => {
