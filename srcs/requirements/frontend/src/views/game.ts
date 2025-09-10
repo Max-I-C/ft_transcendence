@@ -107,22 +107,24 @@ export function showGameView() {
             </div>
         </div>
 		<div id="pvp-game-area" style="display:none;">
-            <div class="pvp-lobby">
-                <button id="join-pvp" class="game-button">🔗 Join/Create PvP Lobby</button>
-                <div id="lobby-status"></div>
-                <div id="lobby-players">
-                    <p><strong>Player 1:</strong> <span id="player1">Waiting...</span></p>
-                    <p><strong>Player 2:</strong> <span id="player2">Waiting...</span></p>
+            <div class="game-interface">
+                <div class="pvp-lobby">
+                    <button id="join-pvp" class="game-button">🔗 Join/Create PvP Lobby</button>
+                    <div id="lobby-status"></div>
+                    <div id="lobby-players">
+                        <p><strong>Player 1:</strong> <span id="player1">Waiting...</span></p>
+                        <p><strong>Player 2:</strong> <span id="player2">Waiting...</span></p>
+                    </div>
                 </div>
+                <div class="game-canvas-container">
+                    <canvas id="pong-canvas-pvp" width="400" height="300"></canvas> 
+                </div>
+                <div class="game-score">
+                    <p id="score-pvp">Score: 0 - 0</p>
+                </div>
+                <p id="game-over-pvp" class="game-over-message"></p>
+                <button id="simulate-game" class="game-button">🎮 Simulate Game</button>
             </div>
-            <div class="game-canvas-container">
-                <canvas id="pong-canvas-pvp" width="400" height="300"></canvas> 
-            </div>
-            <div class="game-score">
-                <p id="score-pvp">Score: 0 - 0</p>
-            </div>
-            <p id="game-over-pvp" class="game-over-message"></p>
-            <button id="simulate-game" class="game-button">🎮 Simulate Game</button>
         </div>
     `;
 

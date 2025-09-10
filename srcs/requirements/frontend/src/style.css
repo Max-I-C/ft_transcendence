@@ -1133,3 +1133,67 @@ button
     color: #fff;
     font-weight: bold;
 }
+
+/* Style amélioré pour l'interface PvP */
+.pvp-lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(66, 47, 81, 0.95), rgba(138, 31, 65, 0.95));
+    backdrop-filter: blur(10px);
+}
+
+#lobby-status {
+    font-size: 1.2rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+#lobby-players {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+#lobby-players p {
+    margin: 0;
+    color: #fff;
+}
+
+/* Boutons améliorés */
+.game-button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#join-pvp {
+    background: linear-gradient(135deg, #ff5252, #ff0055);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
+}
+
+#join-pvp:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 82, 82, 0.4);
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { transform: translateY(-12px) scale(1.05) rotateX(10deg); }
+    50% { transform: translateY(-12px) scale(1.06) rotateX(10deg); }
+    100% { transform: translateY(-12px) scale(1.05) rotateX(10deg); }
+}
