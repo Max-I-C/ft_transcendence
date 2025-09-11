@@ -4,6 +4,7 @@ import { initializeWebSocket } from '../utils/webSocketUtils.js';
 
 let pvpSocket: WebSocket | null = null;
 let currentLobbyId: string | null = null;
+let IsPlayer1: boolean = false;
 
 function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     const player1 = players[0]?.username || 'Waiting...';
@@ -22,7 +23,7 @@ function listenToGameWebSocket(lobbyId: string) {
     const canvas = document.getElementById('pong-canvas-pvp') as HTMLCanvasElement;
     const ctx = canvas?.getContext('2d');
 
-    socket.addEventListener('message', (event) => {
+    socket.addEventListener('message', async (event) => {
         try {
             const msg = JSON.parse(event.data);
 
@@ -40,7 +41,7 @@ function listenToGameWebSocket(lobbyId: string) {
                 document.getElementById('pvp-game-area')!.style.display = 'block';
             }
 
-            // 🎮 Réception des frames du jeu envoyées par le backend
+            // Réception des frames du jeu envoyées par le backend
             if (msg.type === 'game_update' && ctx) {
                 const state = msg.state;
 
@@ -50,9 +51,78 @@ function listenToGameWebSocket(lobbyId: string) {
 
                 // Si game over → affiche un message
                 if (state.gameOver) {
-                    const winner = state.score1 >= 5 ? "Player 1" : "Player 2";
-                    document.getElementById("game-over-pvp")!.textContent =
-                        `Game Over! Winner: ${winner}`;
+                    if(IsPlayer1)
+                    {
+                        const player1Username = document.getElementById('player1')?.textContent || 'Player 1';
+                        const player2Username = document.getElementById('player2')?.textContent || 'Player 2';
+
+                        const winnerTxt = state.score1 >= 5 ? "Player 1" : "Player 2";
+                        document.getElementById("game-over-pvp")!.textContent =
+                            `Game Over! Winner: ${winnerTxt}`;
+
+                        async function getPlayerId(username: string) {
+                            const token = localStorage.getItem('token');
+                            try{
+                                const res = await fetch(`/api/users/id?username=${username}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                });
+                                const data = await res.json();
+                                return(data.id);
+                            }
+                            catch(err){
+                                console.error('Failed to find the username of the user',  err);
+                                return null;
+                            }
+                        }
+                        console.log('username', player1Username);
+                        console.log('username', player2Username);
+                        const player1Id = await getPlayerId(player1Username);
+                        const player2Id = await getPlayerId(player2Username);
+
+                        if(player1Id && player2Id) {
+                            const player1 = { id: player1Id, score: state.score1 };
+                            const player2 = { id: player2Id, score: state.score2 };
+
+
+                            const winner = player1.score > player2.score ? player1 : player2;
+                            const loser = winner === player1 ? player2 : player1;
+
+                            const payload = {
+                                player1: {
+                                    id: player1Id,
+                                    score: player1.score,
+                                    result: player1 === winner ? "win" : "lose",
+                                    points_change: player1 === winner ? 20 : -20
+                                },
+                                player2 : {
+                                    id: player2Id,
+                                    score: player2.score,
+                                    result: player2 === winner ? "win" : "lose",
+                                    points_change: player2 === winner ? 20 : -20
+                                },
+                                match_score: `${player1.score}-${player2.score}`
+                            };
+                            const token = localStorage.getItem('token');
+                            try{
+                                const res = await fetch('/api/register-match', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${token}`
+                                    },
+                                    body: JSON.stringify(payload)
+                                });
+                                const data = await res.json();
+                                console.log('All data stored');
+                            }
+                            catch(err) {
+                                console.error('Fail to register data', err);
+                            }
+                        }
+                    }
                 }
 
                 // Redessine le canvas
@@ -172,6 +242,9 @@ export function showGameView() {
 			});
 			const data = await res.json();
             currentLobbyId = data.lobbyId;
+            
+            IsPlayer1 != !data.joined;
+
             if(currentLobbyId)
                 listenToGameWebSocket(currentLobbyId);
 			if (data.joined) {

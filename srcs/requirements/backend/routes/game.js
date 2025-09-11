@@ -1,4 +1,6 @@
 import { connectedUsers } from '../connectedUsers.js';
+import { db } from '../db.js';
+
 // -- Definition of the variable we will use in the backend -- //
 const lobbies = []; // Liste des lobbies PVP
 const userGameStates = new Map();
@@ -280,5 +282,64 @@ export default async function gameRoutes(fastify, opts) {
         const lobby = lobbies.find(l => l.id === req.params.id);
         if (!lobby) return reply.code(404).send({ error: 'Lobby not found' });
         reply.send({ id: lobby.id, players: lobby.players, status: lobby.status });
+    });
+
+    fastify.post('/register-match', { preValidation: [fastify.authenticate]}, async(req, reply) => {
+        const {player1, player2, match_score } = req.body;
+        
+        if (!player1 || !player2 || !match_score) {
+            return reply.status(400).send({ message: "Invalid match data"});
+        }
+
+        const transaction = db.transaction(() => {
+            try{
+                const insertStmt1 = db.prepare(`
+                    INSERT INTO match_history (user_id, match_score, result, points_change)
+                    VALUES (?, ?, ?, ?) 
+                `);
+                insertStmt1.run(player1.id, match_score, player1.result, player1.points_change);
+
+                const insertStmt2 = db.prepare(`
+                    INSERT INTO match_history (user_id, match_score, result, points_change)
+                    VALUES (?, ?, ?, ?) 
+                `);
+                insertStmt2.run(player2.id, match_score, player2.result, player2.points_change);
+                
+                const updateStatsStmt1 = db.prepare(`
+                    UPDATE users
+                    SET
+                        game_play = game_play + 1,
+                        game_win = game_win + CASE WHEN ? = 'win' THEN 1 ELSE 0 END,
+                        game_loss = game_loss + CASE WHEN ? = 'lose' THEN 1 ELSE 0 END,
+                        score_total = score_total + ?
+                    WHERE id = ?
+                `);
+                updateStatsStmt1.run(player1.result, player1.result, player1.points_change, player1.id);
+
+                const updateStatsStmt2 = db.prepare(`
+                    UPDATE users
+                    SET
+                        game_play = game_play + 1,
+                        game_win = game_win + CASE WHEN ? = 'win' THEN 1 ELSE 0 END,
+                        game_loss = game_loss + CASE WHEN ? = 'lose' THEN 1 ELSE 0 END,
+                        score_total = score_total + ?
+                    WHERE id = ?
+                `);
+                updateStatsStmt2.run(player2.result, player2.result, player2.points_change, player2.id);
+                transaction.commit();
+                return { message: 'Match simulation complete' };
+            }
+            catch(err){
+                transaction.rollback();
+                console.error('Error during data storage');
+                throw new Error('Error with data store in the DB');
+            }
+        });
+        try{
+            return reply.status(201).send(result);
+        }
+        catch(error){
+            return reply.status(500).send({ message: error.message});
+        }
     });
 }
