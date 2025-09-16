@@ -284,62 +284,45 @@ export default async function gameRoutes(fastify, opts) {
         reply.send({ id: lobby.id, players: lobby.players, status: lobby.status });
     });
 
-    fastify.post('/register-match', { preValidation: [fastify.authenticate]}, async(req, reply) => {
-        const {player1, player2, match_score } = req.body;
-        
+    fastify.post('/register-match', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+        const { player1, player2, match_score } = req.body;
+
         if (!player1 || !player2 || !match_score) {
-            return reply.status(400).send({ message: "Invalid match data"});
+            return reply.status(400).send({ message: "Invalid match data" });
         }
 
-        const transaction = db.transaction(() => {
-            try{
-                const insertStmt1 = db.prepare(`
+        try {
+            const transaction = db.transaction(() => {
+                const insertMatch = db.prepare(`
                     INSERT INTO match_history (user_id, match_score, result, points_change)
-                    VALUES (?, ?, ?, ?) 
+                    VALUES (?, ?, ?, ?)
                 `);
-                insertStmt1.run(player1.id, match_score, player1.result, player1.points_change);
-
-                const insertStmt2 = db.prepare(`
-                    INSERT INTO match_history (user_id, match_score, result, points_change)
-                    VALUES (?, ?, ?, ?) 
-                `);
-                insertStmt2.run(player2.id, match_score, player2.result, player2.points_change);
                 
-                const updateStatsStmt1 = db.prepare(`
+                const updateUserStats = db.prepare(`
                     UPDATE users
                     SET
                         game_play = game_play + 1,
                         game_win = game_win + CASE WHEN ? = 'win' THEN 1 ELSE 0 END,
-                        game_loss = game_loss + CASE WHEN ? = 'lose' THEN 1 ELSE 0 END,
+                        game_loss = game_loss + CASE WHEN ? = 'loss' THEN 1 ELSE 0 END,
                         score_total = score_total + ?
                     WHERE id = ?
                 `);
-                updateStatsStmt1.run(player1.result, player1.result, player1.points_change, player1.id);
 
-                const updateStatsStmt2 = db.prepare(`
-                    UPDATE users
-                    SET
-                        game_play = game_play + 1,
-                        game_win = game_win + CASE WHEN ? = 'win' THEN 1 ELSE 0 END,
-                        game_loss = game_loss + CASE WHEN ? = 'lose' THEN 1 ELSE 0 END,
-                        score_total = score_total + ?
-                    WHERE id = ?
-                `);
-                updateStatsStmt2.run(player2.result, player2.result, player2.points_change, player2.id);
-                transaction.commit();
-                return { message: 'Match simulation complete' };
-            }
-            catch(err){
-                transaction.rollback();
-                console.error('Error during data storage');
-                throw new Error('Error with data store in the DB');
-            }
-        });
-        try{
-            return reply.status(201).send(result);
+                // for P1 //
+                insertMatch.run(player1.id, match_score, player1.result, player1.points_change);
+                updateUserStats.run(player1.result, player1.result, player1.points_change, player1.id);
+
+                // for P2 //
+                insertMatch.run(player2.id, match_score, player2.result, player2.points_change);
+                updateUserStats.run(player2.result, player2.result, player2.points_change, player2.id);
+            });
+            transaction();
+
+            return reply.status(201).send({ message: 'Match registered successfully' });
         }
-        catch(error){
-            return reply.status(500).send({ message: error.message});
+        catch(error) {
+            console.error('[SERVER] Database error:', error);
+            return reply.status(500).send({ message: 'Database error: ' + error.message });
         }
     });
 }

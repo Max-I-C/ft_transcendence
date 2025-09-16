@@ -94,14 +94,14 @@ function listenToGameWebSocket(lobbyId: string) {
                                 player1: {
                                     id: player1Id,
                                     score: player1.score,
-                                    result: player1 === winner ? "win" : "lose",
-                                    points_change: player1 === winner ? 20 : -20
+                                    result: player1 === winner ? "win" : "loss",
+                                    points_change: player1 === winner ? 1 : -1
                                 },
                                 player2 : {
                                     id: player2Id,
                                     score: player2.score,
-                                    result: player2 === winner ? "win" : "lose",
-                                    points_change: player2 === winner ? 20 : -20
+                                    result: player2 === winner ? "win" : "loss",
+                                    points_change: player2 === winner ? 1 : -1
                                 },
                                 match_score: `${player1.score}-${player2.score}`
                             };
@@ -243,7 +243,7 @@ export function showGameView() {
 			const data = await res.json();
             currentLobbyId = data.lobbyId;
             
-            IsPlayer1 != !data.joined;
+            IsPlayer1 = !data.joined;
 
             if(currentLobbyId)
                 listenToGameWebSocket(currentLobbyId);
