@@ -216,9 +216,6 @@ export default async function gameRoutes(fastify, opts) {
         reply.send({ status: true });
     });
 
-
-
-
     fastify.post('/game/pvp/lobby', { preValidation: [fastify.authenticate] }, async (req, reply) => {
         const userId = req.user.id;
         const username = req.user.username;
@@ -325,4 +322,38 @@ export default async function gameRoutes(fastify, opts) {
             return reply.status(500).send({ message: 'Database error: ' + error.message });
         }
     });
+
+    // - /game/private/lobby - // 
+    fastify.post('/game/private/lobby', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+        const userId = req.user.id;
+        const username = req.user.username;
+        const { invitedId } = req.body; // l'ID de l'ami invité doit être passé depuis le front
+
+        if (!invitedId) {
+            return reply.code(400).send({ error: 'Missing invitedId' });
+        }
+
+        // Création d’un lobby privé
+        const newLobby = {
+            id: Date.now().toString(),
+            players: [{ id: userId, username }],
+            invitedId,               // On stocke l’ami autorisé à rejoindre
+            status: 'waiting'
+        };
+
+        lobbies.push(newLobby);
+
+        // Notifier l’ami invité (si connecté via websocket)
+        const invitedSocket = connectedUsers.get(String(invitedId));
+        if (invitedSocket) {
+            invitedSocket.send(JSON.stringify({
+                type: 'invited_to_game',
+                lobbyId: newLobby.id,
+                inviter: username
+            }));
+        }
+
+        reply.send({ lobbyId: newLobby.id, joined: false, players: newLobby.players });
+    });
+
 }
