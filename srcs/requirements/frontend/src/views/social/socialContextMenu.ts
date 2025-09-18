@@ -30,6 +30,26 @@ function listenToGameWebSocket(lobbyId: string) {
     
 }
 
+function listenToInviteToGame(socket: WebSocket) {
+    socket.addEventListener('message', (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'invite_to_game') {
+                const { from, lobbyId } = data;
+                const accept = confirm(`${from} has invited you to a private game. Do you accept?`);
+                if (accept) {
+                    // Redirect to the private game lobby
+                    currentLobbyId = lobbyId;
+                    (document.querySelector('.social-container') as HTMLElement)!.style.display = 'none';
+                    document.getElementById('private-game')!.style.display = 'block';
+                }
+            }
+        } catch (err) {
+            console.error('Error handling invite_to_game message:', err);
+        }
+    });
+}
+
 // -- Definition of the display for the right click menu -- //
 export function openContextMenuFor(friendId: string, x: number, y: number) {
     const contextMenu = document.getElementById('context-menu') as HTMLDivElement | null;
