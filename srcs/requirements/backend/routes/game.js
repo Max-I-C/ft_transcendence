@@ -384,22 +384,36 @@ export default async function gameRoutes(fastify, opts) {
         const lobby = lobbies.find(l => l.id === lobbyId);
         if (!lobby) return reply.code(404).send({ error: 'Lobby not found' });
 
-        // Si l'utilisateur est déjà dans le lobby, vus que clc à faire le différent à venir des fois seulement
-        if (!lobby.players.some(p => p.id === userId)) {
+        const isAlreadyInLobby = lobby.players.some(p => p.id === userId);
+        
+        if (!isAlreadyInLobby) {
             lobby.players.push({ id: userId, username: req.user.username });
-        }
-
-        // Notifier les autres joueurs via WebSocket
-        lobby.players.forEach(p => {
-            const socket = connectedUsers.get(String(p.id));
-            if (socket) {
-                socket.send(JSON.stringify({
-                    type: 'player_joined_private',
+            
+            lobby.players.forEach(p => {
+                if (p.id !== userId) {
+                    const socket = connectedUsers.get(String(p.id));
+                    if (socket) {
+                        socket.send(JSON.stringify({
+                            type: 'player_joined_private',
+                            lobbyId: lobby.id,
+                            players: lobby.players,
+                            newPlayer: { id: userId, username: req.user.username }
+                        }));
+                    }
+                }
+            });
+            
+            const newPlayerSocket = connectedUsers.get(String(userId));
+            if (newPlayerSocket) {
+                newPlayerSocket.send(JSON.stringify({
+                    type: 'joined_private_lobby',
                     lobbyId: lobby.id,
-                    players: lobby.players
+                    players: lobby.players,
+                    status: 'success'
                 }));
             }
-        });
+        }
+
         reply.send({ players: lobby.players, status: lobby.status });
     });
 }
