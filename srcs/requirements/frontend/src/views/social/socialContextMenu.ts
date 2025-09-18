@@ -17,6 +17,7 @@ let lastContextClickPos: { x: number; y: number } | null = null;
 let currentLobbyId: string | null = null;
 let privateGameState: any = null;
 let privateGameCtx: CanvasRenderingContext2D | null = null;
+let lastMoveTime = 0; // Pour throttling des mouvements
 
 function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     const player1 = players[0]?.username || 'Waiting...';
@@ -31,13 +32,19 @@ function initPrivateGame(gameState: any) {
     privateGameCtx = canvas.getContext('2d')!;
     privateGameState = gameState;
     
-    // Écouter les touches pour déplacer le paddle
+    // Écouter les touches pour déplacer le paddle (même logique que PvP publics)
     document.addEventListener('keydown', async (e) => {
+        const now = Date.now();
+        // Throttling : limiter les requêtes à max 1 toutes les 50ms
+        if (now - lastMoveTime < 50) return;
+        
         let direction = null;
-        if (e.key === 'w' || e.key === 'ArrowUp') direction = 'up';
-        if (e.key === 's' || e.key === 'ArrowDown') direction = 'down';
+        if (e.key === 'w') direction = 'up';
+        if (e.key === 's') direction = 'down';
         
         if (!direction) return;
+        
+        lastMoveTime = now;
         
         try {
             const token = localStorage.getItem('token');
@@ -98,8 +105,14 @@ export function listenToInviteToGame(socket: WebSocket) {
                 const canvas = document.getElementById('pong-canvas-private') as HTMLCanvasElement;
                 const ctx = canvas.getContext('2d')!;
                 const state = data.state;
+                
+                // CORRECTION: Mettre à jour privateGameState avec les nouvelles données
+                privateGameState = state;
+                
+                // CORRECTION: Utiliser state au lieu de privateGameState pour le score
+                document.getElementById('score-pvp')!.textContent = `Score: ${state.score1} - ${state.score2}`;
+                
                 // Mettre à jour l'affichage
-                document.getElementById('score-pvp')!.textContent = `Score: ${privateGameState.score1} - ${privateGameState.score2}`;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#222';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -110,9 +123,9 @@ export function listenToInviteToGame(socket: WebSocket) {
                 ctx.arc(state.ball.x, state.ball.y, state.ball.radius, 0, Math.PI * 2);
                 ctx.fill();
                 
-                if (data.state.gameOver) {
+                if (state.gameOver) {
                     document.getElementById('game-over-pvp')!.textContent = 
-                        `Game Over! Final score: ${data.state.score1} - ${data.state.score2}`;
+                        `Game Over! Final score: ${state.score1} - ${state.score2}`;
                 }
             }
         } 

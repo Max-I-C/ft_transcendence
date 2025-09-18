@@ -5,6 +5,7 @@ import { initializeWebSocket } from '../utils/webSocketUtils.js';
 let pvpSocket: WebSocket | null = null;
 let currentLobbyId: string | null = null;
 let IsPlayer1: boolean = false;
+let lastMoveTime = 0; // Pour throttling des mouvements PvP
 
 function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     const player1 = players[0]?.username || 'Waiting...';
@@ -278,12 +279,18 @@ export function showGameView() {
             }
         });
         document.addEventListener('keydown', async (e) => {
+            const now = Date.now();
+            // Throttling : limiter les requêtes à max 1 toutes les 50ms
+            if (now - lastMoveTime < 50) return;
+            
             let direction = null;
 
             if (e.key === 'w') direction = 'up';
             if (e.key === 's') direction = 'down';
 
             if (!direction) return;
+            
+            lastMoveTime = now;
 
             try {
                 const token = localStorage.getItem('token');
