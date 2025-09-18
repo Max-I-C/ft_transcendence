@@ -356,4 +356,50 @@ export default async function gameRoutes(fastify, opts) {
         reply.send({ lobbyId: newLobby.id, joined: false, players: newLobby.players });
     });
 
+    fastify.get('/game/private/lobby/:id', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+        const userId = req.user.id;
+        const lobby = lobbies.find(l => l.id === req.params.id);
+
+        if (!lobby) {
+            return reply.code(404).send({ error: 'Lobby not found' });
+        }
+
+        // Vérifier que l'utilisateur est bien l'host ou l'invité
+        const isPlayer = lobby.players.some(p => p.id === userId);
+        if (!isPlayer) {
+            return reply.code(403).send({ error: 'You are not a member of this private lobby' });
+        }
+
+        reply.send({
+            id: lobby.id,
+            players: lobby.players,
+            status: lobby.status
+        });
+    });
+
+    fastify.post('/game/private/join/:id', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+        const userId = req.user.id;
+        const lobbyId = req.params.id;
+
+        const lobby = lobbies.find(l => l.id === lobbyId);
+        if (!lobby) return reply.code(404).send({ error: 'Lobby not found' });
+
+        // Si l'utilisateur est déjà dans le lobby, vus que clc à faire le différent à venir des fois seulement
+        if (!lobby.players.some(p => p.id === userId)) {
+            lobby.players.push({ id: userId, username: req.user.username });
+        }
+
+        // Notifier les autres joueurs via WebSocket
+        lobby.players.forEach(p => {
+            const socket = connectedUsers.get(String(p.id));
+            if (socket) {
+                socket.send(JSON.stringify({
+                    type: 'player_joined',
+                    lobbyId: lobby.id,
+                    players: lobby.players
+                }));
+            }
+        });
+        reply.send({ players: lobby.players, status: lobby.status });
+    });
 }

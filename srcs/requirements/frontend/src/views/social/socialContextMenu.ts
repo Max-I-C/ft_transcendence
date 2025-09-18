@@ -24,28 +24,40 @@ function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     document.getElementById('player2')!.textContent = player2;
 }
 
-function listenToGameWebSocket(lobbyId: string) {
-    const socket = initializeWebSocket();
-    const canvas = document.getElementById('pong-canvas-pvp') as HTMLCanvasElement;
-    
-}
-
-function listenToInviteToGame(socket: WebSocket) {
-    socket.addEventListener('message', (event) => {
+export function listenToInviteToGame(socket: WebSocket) {
+    socket.addEventListener('message', async (event) => {
         try {
             const data = JSON.parse(event.data);
-            if (data.type === 'invite_to_game') {
+            if (data.type === 'invited_to_game') {
                 const { from, lobbyId } = data;
                 const accept = confirm(`${from} has invited you to a private game. Do you accept?`);
                 if (accept) {
-                    // Redirect to the private game lobby
+                    const token = localStorage.getItem('token');
+                    await fetch(`/api/game/private/join/${lobbyId}`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    // Une fois rejoint, récupérer les infos du lobby
+                    const res = await fetch(`/api/game/private/lobby/${lobbyId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const lobbyData = await res.json();
+
                     currentLobbyId = lobbyId;
                     (document.querySelector('.social-container') as HTMLElement)!.style.display = 'none';
                     document.getElementById('private-game')!.style.display = 'block';
+
+                    updateLobbyPlayers(lobbyData.players); // ⬅️ important pour afficher qui est dans le lobby
                 }
             }
+            if(data.type == 'player_joined') {
+                document.getElementById('player2')!.textContent = data.player2;
+                document.getElementById('lobby-status')!.innerHTML =
+                    `<span style="color:green;">Player 2 has joined! Ready to start.</span>`;
+            }
         } catch (err) {
-            console.error('Error handling invite_to_game message:', err);
+            console.error('Error handling invited_to_game message:', err);
         }
     });
 }
