@@ -43,5 +43,4 @@ export function setupSocket(onMessage: (socket: WebSocket) => void) {
             console.error('Failed to parse JSON:', err);
         }
     });
-    onMessage(socket);
 }

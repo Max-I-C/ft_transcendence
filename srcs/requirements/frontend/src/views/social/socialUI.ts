@@ -43,5 +43,23 @@ export function renderSocialUI(app: HTMLElement) {
                 <li id="remove-action">❌ Delete</li>
             </ul>
         </div>
+        <div id="private-game" style="display:none;">
+            <div class="game-interface">
+                <div class="pvp-lobby">
+                    <div id="lobby-status"></div>
+                    <div id="lobby-players">
+                        <p><strong>Player 1:</strong> <span id="player1">Waiting...</span></p>
+                        <p><strong>Player 2:</strong> <span id="player2">Waiting...</span></p>
+                    </div>
+                </div>
+                <div class="game-canvas-container">
+                    <canvas id="pong-canvas-pvp" width="400" height="300"></canvas> 
+                </div>
+                <div class="game-score">
+                    <p id="score-pvp">Score: 0 - 0</p>
+                </div>
+                <p id="game-over-pvp" class="game-over-message"></p>
+            </div>
+        </div>
     `;
 }

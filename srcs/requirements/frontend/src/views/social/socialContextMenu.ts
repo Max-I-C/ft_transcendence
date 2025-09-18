@@ -120,4 +120,28 @@ export function setupContextMenu(socket: WebSocket) {
             alert('Error blocking friend');
         }
     });
+    // -- Part for the button "Invite" -- //
+    document.getElementById('invite-action')?.addEventListener('click', async () => {
+        if (!currentFriendId) return;
+        const tokenLocal = localStorage.getItem('token') ?? undefined;
+        if (!tokenLocal) return;
+        (document.querySelector('.social-container') as HTMLElement)!.style.display = 'none';
+        document.getElementById('private-game')!.style.display = 'block';
+        /*
+        const res = await fetch(``, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${tokenLocal}`
+            },
+            body: JSON.stringify({ blockedId: currentFriendId })
+        });
+        if (res.ok) {
+            
+        }
+        else {
+            alert('Error inviting friend');
+        }
+        */
+    });
 }
