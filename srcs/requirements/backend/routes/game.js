@@ -394,7 +394,7 @@ export default async function gameRoutes(fastify, opts) {
             const socket = connectedUsers.get(String(p.id));
             if (socket) {
                 socket.send(JSON.stringify({
-                    type: 'player_joined',
+                    type: 'player_joined_private',
                     lobbyId: lobby.id,
                     players: lobby.players
                 }));

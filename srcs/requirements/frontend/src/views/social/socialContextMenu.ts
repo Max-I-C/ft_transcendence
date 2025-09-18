@@ -30,8 +30,7 @@ export function listenToInviteToGame(socket: WebSocket) {
             const data = JSON.parse(event.data);
             if (data.type === 'invited_to_game') {
                 const { from, lobbyId } = data;
-                const accept = confirm(`${from} has invited you to a private game. Do you accept?`);
-                if (accept) {
+                if (confirm(`${from} has invited you to a private game. Do you accept?`)) {
                     const token = localStorage.getItem('token');
                     await fetch(`/api/game/private/join/${lobbyId}`, {
                         method: 'POST',
@@ -48,10 +47,10 @@ export function listenToInviteToGame(socket: WebSocket) {
                     (document.querySelector('.social-container') as HTMLElement)!.style.display = 'none';
                     document.getElementById('private-game')!.style.display = 'block';
 
-                    updateLobbyPlayers(lobbyData.players); // ⬅️ important pour afficher qui est dans le lobby
+                    updateLobbyPlayers(lobbyData.players); // important pour afficher qui est dans le lobby
                 }
             }
-            if(data.type == 'player_joined') {
+            if(data.type == 'player_joined_private') {
                 document.getElementById('player2')!.textContent = data.player2;
                 document.getElementById('lobby-status')!.innerHTML =
                     `<span style="color:green;">Player 2 has joined! Ready to start.</span>`;
