@@ -15,6 +15,8 @@ import { initializeWebSocket } from '../../utils/webSocketUtils.js';
 let currentFriendId: string | null = null;
 let lastContextClickPos: { x: number; y: number } | null = null;
 let currentLobbyId: string | null = null;
+let privateGameState: any = null;
+let privateGameCtx: CanvasRenderingContext2D | null = null;
 
 function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     const player1 = players[0]?.username || 'Waiting...';
@@ -22,6 +24,35 @@ function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
 
     document.getElementById('player1')!.textContent = player1;
     document.getElementById('player2')!.textContent = player2;
+}
+
+function initPrivateGame(gameState: any) {
+    const canvas = document.getElementById('pong-canvas-private') as HTMLCanvasElement;
+    privateGameCtx = canvas.getContext('2d')!;
+    privateGameState = gameState;
+    
+    // Écouter les touches pour déplacer le paddle
+    document.addEventListener('keydown', async (e) => {
+        let direction = null;
+        if (e.key === 'w' || e.key === 'ArrowUp') direction = 'up';
+        if (e.key === 's' || e.key === 'ArrowDown') direction = 'down';
+        
+        if (!direction) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            await fetch('/api/game/pvp/move-paddle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ direction })
+            });
+        } catch (err) {
+            console.error('Error moving paddle:', err);
+        }
+    });
 }
 
 export function listenToInviteToGame(socket: WebSocket) {
@@ -55,7 +86,37 @@ export function listenToInviteToGame(socket: WebSocket) {
                 document.getElementById('lobby-status')!.innerHTML =
                     `<span style="color:green;">Player 2 has joined! Ready to start.</span>`;
             }
-        } catch (err) {
+            if (data.type === 'game_start') {
+                document.getElementById('lobby-status')!.innerHTML =
+                    `<span style="color:blue;">Game is starting...</span>`;
+                
+                initPrivateGame(data.state);
+                console.log('Game starting with state:', data.state);
+            }
+            if (data.type === 'game_update' && data.lobbyId === currentLobbyId) {
+                // Mettre à jour l'état du jeu
+                const canvas = document.getElementById('pong-canvas-private') as HTMLCanvasElement;
+                const ctx = canvas.getContext('2d')!;
+                const state = data.state;
+                // Mettre à jour l'affichage
+                document.getElementById('score-pvp')!.textContent = `Score: ${privateGameState.score1} - ${privateGameState.score2}`;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#222';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(state.paddle1.x, state.paddle1.y, state.paddle1.width, state.paddle1.height);
+                ctx.fillRect(state.paddle2.x, state.paddle2.y, state.paddle2.width, state.paddle2.height);
+                ctx.beginPath();
+                ctx.arc(state.ball.x, state.ball.y, state.ball.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (data.state.gameOver) {
+                    document.getElementById('game-over-pvp')!.textContent = 
+                        `Game Over! Final score: ${data.state.score1} - ${data.state.score2}`;
+                }
+            }
+        } 
+        catch (err) {
             console.error('Error handling invited_to_game message:', err);
         }
     });

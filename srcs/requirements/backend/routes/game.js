@@ -412,6 +412,26 @@ export default async function gameRoutes(fastify, opts) {
                     status: 'success'
                 }));
             }
+            
+            if (lobby.players.length === 2) {
+                lobby.status = 'ready';
+                lobby.gameState = createInitialGameState(); // Initialiser l'état du jeu
+                
+                // Notifier TOUS les joueurs que le jeu commence
+                lobby.players.forEach(p => {
+                    const socket = connectedUsers.get(String(p.id));
+                    if (socket) {
+                        socket.send(JSON.stringify({
+                            type: 'game_start',
+                            lobbyId: lobby.id,
+                            state: lobby.gameState,
+                            players: lobby.players
+                        }));
+                    }
+                });
+                
+                console.log(`Private game started in lobby ${lobbyId}`);
+            }
         }
 
         reply.send({ players: lobby.players, status: lobby.status });

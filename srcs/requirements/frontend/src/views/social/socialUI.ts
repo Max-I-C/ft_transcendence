@@ -53,7 +53,7 @@ export function renderSocialUI(app: HTMLElement) {
                     </div>
                 </div>
                 <div class="game-canvas-container">
-                    <canvas id="pong-canvas-pvp" width="400" height="300"></canvas> 
+                    <canvas id="pong-canvas-private" width="400" height="300"></canvas> 
                 </div>
                 <div class="game-score">
                     <p id="score-pvp">Score: 0 - 0</p>
