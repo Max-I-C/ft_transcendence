@@ -28,6 +28,7 @@ function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
 }
 
 function initPrivateGame(gameState: any) {
+    listenToInviteToGame();
     const canvas = document.getElementById('pong-canvas-private') as HTMLCanvasElement;
     privateGameCtx = canvas.getContext('2d')!;
     privateGameState = gameState;
@@ -62,7 +63,8 @@ function initPrivateGame(gameState: any) {
     });
 }
 
-export function listenToInviteToGame(socket: WebSocket) {
+export function listenToInviteToGame() {
+    const socket = initializeWebSocket();
     socket.addEventListener('message', async (event) => {
         try {
             const data = JSON.parse(event.data);
