@@ -14,12 +14,18 @@ import { initializeWebSocket } from '../../utils/webSocketUtils.js';
 
 let currentFriendId: string | null = null;
 let lastContextClickPos: { x: number; y: number } | null = null;
-let currentLobbyId: string | null = null;
-let privateGameState: any = null;
 let privateGameCtx: CanvasRenderingContext2D | null = null;
 let lastMoveTime = 0; // Pour throttling des mouvements
 
-function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
+export const lobbyStore = {
+    currentLobbyId: null as string | null
+};
+
+export const gameStore = {
+    privateGameState: null as string | null
+};
+
+export function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     const player1 = players[0]?.username || 'Waiting...';
     const player2 = players[1]?.username || 'Waiting...';
 
@@ -27,11 +33,10 @@ function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     document.getElementById('player2')!.textContent = player2;
 }
 
-function initPrivateGame(gameState: any) {
-    listenToInviteToGame();
+export function initPrivateGame(gameState: any) {
     const canvas = document.getElementById('pong-canvas-private') as HTMLCanvasElement;
     privateGameCtx = canvas.getContext('2d')!;
-    privateGameState = gameState;
+    gameStore.privateGameState = gameState;
     
     // Écouter les touches pour déplacer le paddle (même logique que PvP publics)
     document.addEventListener('keydown', async (e) => {
@@ -59,80 +64,6 @@ function initPrivateGame(gameState: any) {
             });
         } catch (err) {
             console.error('Error moving paddle:', err);
-        }
-    });
-}
-
-export function listenToInviteToGame() {
-    const socket = initializeWebSocket();
-    socket.addEventListener('message', async (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'invited_to_game') {
-                const { from, lobbyId } = data;
-                if (confirm(`${from} has invited you to a private game. Do you accept?`)) {
-                    const token = localStorage.getItem('token');
-                    await fetch(`/api/game/private/join/${lobbyId}`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    // Une fois rejoint, récupérer les infos du lobby
-                    const res = await fetch(`/api/game/private/lobby/${lobbyId}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const lobbyData = await res.json();
-
-                    currentLobbyId = lobbyId;
-                    (document.querySelector('.social-container') as HTMLElement)!.style.display = 'none';
-                    document.getElementById('private-game')!.style.display = 'block';
-
-                    updateLobbyPlayers(lobbyData.players); // important pour afficher qui est dans le lobby
-                }
-            }
-            if(data.type == 'player_joined_private') {
-                document.getElementById('player2')!.textContent = data.player2;
-                document.getElementById('lobby-status')!.innerHTML =
-                    `<span style="color:green;">Player 2 has joined! Ready to start.</span>`;
-            }
-            if (data.type === 'game_start') {
-                document.getElementById('lobby-status')!.innerHTML =
-                    `<span style="color:blue;">Game is starting...</span>`;
-                
-                initPrivateGame(data.state);
-                console.log('Game starting with state:', data.state);
-            }
-            if (data.type === 'game_update' && data.lobbyId === currentLobbyId) {
-                // Mettre à jour l'état du jeu
-                const canvas = document.getElementById('pong-canvas-private') as HTMLCanvasElement;
-                const ctx = canvas.getContext('2d')!;
-                const state = data.state;
-                
-                // CORRECTION: Mettre à jour privateGameState avec les nouvelles données
-                privateGameState = state;
-                
-                // CORRECTION: Utiliser state au lieu de privateGameState pour le score
-                document.getElementById('score-pvp')!.textContent = `Score: ${state.score1} - ${state.score2}`;
-                
-                // Mettre à jour l'affichage
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#222';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.fillRect(state.paddle1.x, state.paddle1.y, state.paddle1.width, state.paddle1.height);
-                ctx.fillRect(state.paddle2.x, state.paddle2.y, state.paddle2.width, state.paddle2.height);
-                ctx.beginPath();
-                ctx.arc(state.ball.x, state.ball.y, state.ball.radius, 0, Math.PI * 2);
-                ctx.fill();
-                
-                if (state.gameOver) {
-                    document.getElementById('game-over-pvp')!.textContent = 
-                        `Game Over! Final score: ${state.score1} - ${state.score2}`;
-                }
-            }
-        } 
-        catch (err) {
-            console.error('Error handling invited_to_game message:', err);
         }
     });
 }
@@ -262,7 +193,7 @@ export function setupContextMenu(socket: WebSocket) {
         });
 
         const data = await res.json();
-        currentLobbyId = data.lobbyId;
+        lobbyStore.currentLobbyId = data.lobbyId;
 
         if (data.joined) {
             document.getElementById('lobby-status')!.innerHTML = `<span style="color:green;">Private lobby ready! Waiting for game...</span>`;
