@@ -438,26 +438,30 @@ export default async function gameRoutes(fastify, opts) {
     });
     
     fastify.post('/game/private/join/refused/:id', { preValidation: [fastify.authenticate] }, async (req, reply) => {
-        const userId = req.user.id;          // Celui qui refuse
-        const userName = req.user.username;  // Son username
-        const lobbyId = req.params.lobbyId;
+        const userId = req.user.id; // The user who refuses
+        const lobbyId = req.params.lobbyId; // The lobby ID
 
         const lobby = lobbies.find(l => l.id === lobbyId);
-        if (!lobby) return reply.code(404).send({ error: 'Lobby not found' });
+        if (!lobby) {
+            return reply.code(404).send({ error: 'Lobby not found' });
+        }
 
-        lobby.players.forEach(p => {
-            if (p.id !== userId) {
-                const socket = connectedUsers.get(String(p.id));
-                if (socket) {
-                    socket.send(JSON.stringify({
-                        type: 'invitation_refused',
-                        lobbyId,
-                        by: { id: userId, username: userName }
-                    }));
-                }
+        const inviter = lobby.players[0];
+        const inviterSocket = connectedUsers.get(String(inviter.id));
+        if (inviterSocket) {
+            inviterSocket.send(JSON.stringify({
+                type: 'invitation_refused',
+                from: userId
+            }));
+        }
+
+        if (lobby.players.length === 1) {
+            const index = lobbies.findIndex(l => l.id === lobbyId);
+            if (index !== -1) {
+                lobbies.splice(index, 1);
             }
-        });
-        lobby.players = lobby.players.filter(p => p.id !== userId);
+        }
+
         reply.send({ status: 'refused' });
     });
 }
