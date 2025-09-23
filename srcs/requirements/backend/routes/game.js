@@ -436,4 +436,23 @@ export default async function gameRoutes(fastify, opts) {
 
         reply.send({ players: lobby.players, status: lobby.status });
     });
+    
+    fastify.post('/game/private/join/refused', { preValidation: [fastify.authenticate] }, async (req, reply) => {
+        const userId = req.user.id;
+        const { inviterId } = req.body;
+
+        if (!inviterId) {
+            return reply.code(400).send({ error: 'Missing inviterId' });
+        }
+
+        const inviterSocket = connectedUsers.get(String(inviterId));
+        if (inviterSocket) {
+            inviterSocket.send(JSON.stringify({
+                type: 'invitation_refused',
+                from: userId
+            }));
+        }
+
+        reply.send({ status: 'refused' });
+    });
 }

@@ -47,7 +47,8 @@ export function setupSocket(onMessage: (socket: WebSocket) => void) {
             }
             if (msg.type === 'invited_to_game') {
                 const { from, lobbyId } = msg;
-                if (confirm(`${from} has invited you to a private game. Do you accept?`)) {
+                const accepted = confirm(`${from} has invited you to a private game. Do you accept?`);
+                if (accepted) {
                     const token = localStorage.getItem('token');
                     await fetch(`/api/game/private/join/${lobbyId}`, {
                         method: 'POST',
@@ -65,6 +66,13 @@ export function setupSocket(onMessage: (socket: WebSocket) => void) {
                     document.getElementById('private-game')!.style.display = 'block';
 
                     updateLobbyPlayers(lobbyData.players); // important pour afficher qui est dans le lobby
+                }
+                else {
+                    const token = localStorage.getItem('token');
+                    await fetch(`/api/game/private/join/refused`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
                 }
             }
             if(msg.type == 'player_joined_private') {
