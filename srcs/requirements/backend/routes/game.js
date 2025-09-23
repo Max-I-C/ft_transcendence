@@ -438,8 +438,8 @@ export default async function gameRoutes(fastify, opts) {
     });
     
     fastify.post('/game/private/join/refused/:id', { preValidation: [fastify.authenticate] }, async (req, reply) => {
-        const userId = req.user.id; // The user who refuses
-        const lobbyId = req.params.lobbyId; // The lobby ID
+        const userId = req.user.id; 
+        const lobbyId = req.params.id; 
 
         const lobby = lobbies.find(l => l.id === lobbyId);
         if (!lobby) {
