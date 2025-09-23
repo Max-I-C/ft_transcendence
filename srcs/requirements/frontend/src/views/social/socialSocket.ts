@@ -69,7 +69,7 @@ export function setupSocket(onMessage: (socket: WebSocket) => void) {
                 }
                 else {
                     const token = localStorage.getItem('token');
-                    await fetch(`/api/game/private/join/refused`, {
+                    await fetch(`/api/game/private/join/refused/${lobbyId}`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -113,6 +113,10 @@ export function setupSocket(onMessage: (socket: WebSocket) => void) {
                     document.getElementById('game-over-pvp')!.textContent = 
                         `Game Over! Final score: ${state.score1} - ${state.score2}`;
                 }
+            }
+            if (msg.type === 'invitation_refused') {
+                (document.querySelector('.social-container') as HTMLElement)!.style.display = 'block';
+                document.getElementById('private-game')!.style.display = 'none';
             }
         } 
         catch (err) {
