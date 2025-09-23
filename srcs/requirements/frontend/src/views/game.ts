@@ -7,6 +7,17 @@ let currentLobbyId: string | null = null;
 let IsPlayer1: boolean = false;
 let lastMoveTime = 0; // Pour throttling des mouvements PvP
 
+// Tournament data structure
+const tournament = {
+    players: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+    matches: [
+        { id: 1, player1: 'Player 1', player2: 'Player 2', winner: null },
+        { id: 2, player1: 'Player 3', player2: 'Player 4', winner: null },
+        { id: 3, player1: '', player2: '', winner: null } // Final match
+    ],
+    currentMatchIndex: 0
+};
+
 function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
     const player1 = players[0]?.username || 'Waiting...';
     const player2 = players[1]?.username || 'Waiting...';
@@ -204,6 +215,17 @@ export function showGameView() {
                 </div>
                 <p id="game-over-pvp" class="game-over-message"></p>
                 <button id="simulate-game" class="game-button">🎮 Simulate Game</button>
+            </div>
+        </div>
+        <div id="tournament-area" style="display:none;">
+            <h2>Tournament</h2>
+            <div id="tournament-bracket">
+                <p>Match 1: <span id="match1">Player 1 vs Player 2</span></p>
+                <p>Match 2: <span id="match2">Player 3 vs Player 4</span></p>
+                <p>Final: <span id="final-match">Waiting for players...</span></p>
+            </div>
+            <div id="tournament-controls">
+                <button id="start-tournament" class="game-button">Start Tournament</button>
             </div>
         </div>
     `;
@@ -414,4 +436,75 @@ export function showGameView() {
             }
         });
     }
+
+    function startTournament() {
+        const tournamentArea = document.getElementById('tournament-area');
+        const match1 = document.getElementById('match1');
+        const match2 = document.getElementById('match2');
+        const finalMatch = document.getElementById('final-match');
+
+        if (!tournamentArea || !match1 || !match2 || !finalMatch) return;
+
+        tournamentArea.style.display = 'block';
+
+        const playMatch = (match: { player1: string; player2: string; winner: string | null }) => {
+            return new Promise<string>((resolve) => {
+                const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('Canvas context is null');
+                    return;
+                }
+                let gameInterval: number | null = null;
+
+                const gameState = {
+                    paddle1: { x: 10, y: 120, width: 10, height: 60 },
+                    paddle2: { x: 380, y: 120, width: 10, height: 60 },
+                    ball: { x: 200, y: 150, radius: 8, dx: 1, dy: 1, speed: 3 },
+                    score1: 0,
+                    score2: 0,
+                    gameOver: false
+                };
+
+                const updateGame = () => {
+                    if (gameState.gameOver) {
+                        if (gameInterval !== null) {
+                            clearInterval(gameInterval);
+                        }
+                        resolve(gameState.score1 > gameState.score2 ? match.player1 : match.player2);
+                        return;
+                    }
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(gameState.paddle1.x, gameState.paddle1.y, gameState.paddle1.width, gameState.paddle1.height);
+                    ctx.fillRect(gameState.paddle2.x, gameState.paddle2.y, gameState.paddle2.width, gameState.paddle2.height);
+                    ctx.beginPath();
+                    ctx.arc(gameState.ball.x, gameState.ball.y, gameState.ball.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                };
+
+                gameInterval = window.setInterval(updateGame, 1000 / 60);
+            });
+        };
+
+        const runTournament = async () => {
+            const winner1 = await playMatch(tournament.matches[0]);
+            match1.textContent += ` - Winner: ${winner1}`;
+            tournament.matches[2].player1 = winner1;
+
+            const winner2 = await playMatch(tournament.matches[1]);
+            match2.textContent += ` - Winner: ${winner2}`;
+            tournament.matches[2].player2 = winner2;
+
+            const finalWinner = await playMatch(tournament.matches[2]);
+            finalMatch.textContent += ` - Winner: ${finalWinner}`;
+        };
+
+        runTournament();
+    }
+
+    document.getElementById('start-tournament')?.addEventListener('click', startTournament);
 }
