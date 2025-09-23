@@ -175,7 +175,12 @@ export function showGameView() {
             </div>
             <div class="game-card disabled" id="pvp-game-card">
                 <h2>PvP</h2>
-                <p>Play against another player (Coming soon)</p>
+                <p>Play against another player</p>
+                <div class="card-effect"></div>
+            </div>
+            <div class="game-card disabled" id="tournament-game-card">
+                <h2>Tournament !</h2>
+                <p>Tournament in local game</p>
                 <div class="card-effect"></div>
             </div>
         </div>
@@ -224,6 +229,9 @@ export function showGameView() {
                 <p>Match 2: <span id="match2">Player 3 vs Player 4</span></p>
                 <p>Final: <span id="final-match">Waiting for players...</span></p>
             </div>
+            <div class="game-canvas-container">
+                <canvas id="pong-canvas-tournament" width="400" height="300"></canvas>
+            </div>
             <div id="tournament-controls">
                 <button id="start-tournament" class="game-button">Start Tournament</button>
             </div>
@@ -241,6 +249,7 @@ export function showGameView() {
     // Effet de carte
     const localCard = document.getElementById('local-game-card')!;
     const pvpCard = document.getElementById('pvp-game-card')!;
+    const tournamentCard = document.getElementById('tournament-game-card')!;
 
     localCard.addEventListener('click', () => {
         (document.querySelector('.game-choice-container') as HTMLElement)!.style.display = 'none';
@@ -252,6 +261,12 @@ export function showGameView() {
         (document.querySelector('.game-choice-container') as HTMLElement)!.style.display = 'none';
 		document.getElementById('pvp-game-area')!.style.display = 'block';
 		initPvpGame();
+    });
+
+    tournamentCard.addEventListener('click', () => {
+        (document.querySelector('.game-choice-container') as HTMLElement)!.style.display = 'none';
+        document.getElementById('tournament-area')!.style.display = 'block';
+        startTournament();
     });
 
 	function initPvpGame() {
@@ -449,10 +464,10 @@ export function showGameView() {
 
         const playMatch = (match: { player1: string; player2: string; winner: string | null }) => {
             return new Promise<string>((resolve) => {
-                const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
+                const canvas = document.getElementById('pong-canvas-tournament') as HTMLCanvasElement;
                 const ctx = canvas.getContext('2d');
                 if (!ctx) {
-                    console.error('Canvas context is null');
+                    console.log('Canvas context is null');
                     return;
                 }
                 let gameInterval: number | null = null;
