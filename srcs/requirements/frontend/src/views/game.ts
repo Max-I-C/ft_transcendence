@@ -229,6 +229,13 @@ export function showGameView() {
                 <p>Match 2: <span id="match2">Player 3 vs Player 4</span></p>
                 <p>Final: <span id="final-match">Waiting for players...</span></p>
             </div>
+            <div id="tournament-bracket">
+                <p>Winner match 1: <span id="match1Win"></span></p>
+                <p>Winner match 2: <span id="match2Win"></span></p>
+            </div>
+            <div id="tournament-bracket">
+                <p>WINNER 🏆: <span id="matchFinal"></span></p>
+            </div>
             <div class="game-canvas-container">
                 <canvas id="pong-canvas-tournament" width="400" height="300"></canvas>
             </div>
@@ -455,11 +462,13 @@ export function showGameView() {
     function startTournament() {
         const tournamentArea = document.getElementById('tournament-area');
         const match1 = document.getElementById('match1');
+        const match1Win = document.getElementById('match1Win');
         const match2 = document.getElementById('match2');
-        const finalMatch = document.getElementById('final-match');
+        const match2Win = document.getElementById('match2Win');
+        const finalMatch = document.getElementById('matchFinal');
         const startButton = document.getElementById('start-tournament');
 
-        if (!tournamentArea || !match1 || !match2 || !finalMatch || !startButton) return;
+        if (!tournamentArea || !match1Win || !match2Win || !match1 || !match2 || !finalMatch || !startButton) return;
 
         // Reset tournament state
         tournament.matches.forEach(match => {
@@ -469,7 +478,7 @@ export function showGameView() {
         });
         match1.textContent = 'Player 1 vs Player 2';
         match2.textContent = 'Player 3 vs Player 4';
-        finalMatch.textContent = 'Waiting for players...';
+        finalMatch.textContent = '';
 
         tournamentArea.style.display = 'block';
 
@@ -592,15 +601,18 @@ export function showGameView() {
         const runTournament = async () => {
             try {
                 const winner1 = await playMatch(tournament.matches[0]);
-                match1.textContent += ` - Winner: ${winner1}`;
+                match1Win.textContent += `${winner1}`;
+                match1Win.style.color = "green";
                 tournament.matches[2].player1 = winner1;
                 console.log('Finish_1');
                 const winner2 = await playMatch(tournament.matches[1]);
-                match2.textContent += ` - Winner: ${winner2}`;
+                match2Win.textContent += `${winner2}`;
+                match2Win.style.color = "green";
                 tournament.matches[2].player2 = winner2;
                 console.log('Finish_2');
                 const finalWinner = await playMatch(tournament.matches[2]);
-                finalMatch.textContent += ` - Winner: ${finalWinner}`;
+                finalMatch.textContent += `${finalWinner}`;
+                finalMatch.style.color = "green";
                 console.log('Finish_final');
             } catch (error) {
                 console.error('Error during tournament execution:', error);
