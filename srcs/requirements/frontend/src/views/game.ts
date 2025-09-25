@@ -53,15 +53,12 @@ function listenToGameWebSocket(lobbyId: string) {
                 document.getElementById('pvp-game-area')!.style.display = 'block';
             }
 
-            // Réception des frames du jeu envoyées par le backend
             if (msg.type === 'game_update' && ctx) {
                 const state = msg.state;
 
-                // Met à jour le score
                 document.getElementById('score-pvp')!.textContent =
                     `Score: ${state.score1} - ${state.score2}`;
 
-                // Si game over → affiche un message
                 if (state.gameOver) {
                     if(IsPlayer1)
                     {
@@ -137,7 +134,6 @@ function listenToGameWebSocket(lobbyId: string) {
                     }
                 }
 
-                // Redessine le canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#222';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -239,13 +235,15 @@ export function showGameView() {
             <div class="game-canvas-container">
                 <canvas id="pong-canvas-tournament" width="400" height="300"></canvas>
             </div>
+            <div class="game-score">
+                <p id="score-tournament">Score: 0 - 0</p>
+            </div>
             <div id="tournament-controls">
                 <button id="start-tournament" class="game-button">Start Tournament</button>
             </div>
         </div>
     `;
 
-    // Navigation
     document.body.className = 'home-page';
     document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
     document.getElementById('profile-link')!.addEventListener('click', () => navigateTo('/profile'));
@@ -253,7 +251,6 @@ export function showGameView() {
     document.getElementById('home-link')!.addEventListener('click', () => navigateTo('/home'));
     document.getElementById('logout-link')!.addEventListener('click', () => logout());
 
-    // Effet de carte
     const localCard = document.getElementById('local-game-card')!;
     const pvpCard = document.getElementById('pvp-game-card')!;
     const tournamentCard = document.getElementById('tournament-game-card')!;
@@ -546,6 +543,7 @@ export function showGameView() {
                             }
                             resolve(data.score1 > data.score2 ? match.player1 : match.player2);
                         }
+                        document.getElementById('score-pvp')!.textContent = `Score: ${data.score1} - ${data.score2}`;
                     } catch (err) {
                         console.error('Error updating game state:', err);
                     }
@@ -619,7 +617,7 @@ export function showGameView() {
             }
         };
 
-        // Wait for the user to click "Start Tournament"
+        // Wait for the user to click Start Tournament
         startButton.addEventListener('click', () => {
             runTournament();
         });
