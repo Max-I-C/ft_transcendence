@@ -625,9 +625,33 @@ export function showGameView() {
 
         // Wait for the user to click Start Tournament
         startButton.addEventListener('click', () => {
+            resetTournamentUI();
             runTournament();
         });
     }
 
     document.getElementById('start-tournament')?.addEventListener('click', startTournament);
+}
+
+function resetTournamentUI() {
+    const match1 = document.getElementById('match1');
+    const match2 = document.getElementById('match2');
+    const match1Win = document.getElementById('match1Win');
+    const match2Win = document.getElementById('match2Win');
+    const finalMatch = document.getElementById('matchFinal');
+
+    if (match1) match1.textContent = 'Player 1 vs Player 2';
+    if (match2) match2.textContent = 'Player 3 vs Player 4';
+    if (match1Win) {
+        match1Win.textContent = '';
+        match1Win.style.color = '';
+    }
+    if (match2Win) {
+        match2Win.textContent = '';
+        match2Win.style.color = '';
+    }
+    if (finalMatch) {
+        finalMatch.textContent = '';
+        finalMatch.style.color = '';
+    }
 }
