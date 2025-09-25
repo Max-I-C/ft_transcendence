@@ -223,7 +223,6 @@ export function showGameView() {
             <div id="tournament-bracket">
                 <p>Match 1: <span id="match1">Player 1 vs Player 2</span></p>
                 <p>Match 2: <span id="match2">Player 3 vs Player 4</span></p>
-                <p>Final: <span id="final-match">Waiting for players...</span></p>
             </div>
             <div id="tournament-bracket">
                 <p>Winner match 1: <span id="match1Win"></span></p>
@@ -321,7 +320,6 @@ export function showGameView() {
         });
         document.addEventListener('keydown', async (e) => {
             const now = Date.now();
-            // Throttling : limiter les requêtes à max 1 toutes les 50ms
             if (now - lastMoveTime < 50) return;
             
             let direction = null;
@@ -464,6 +462,14 @@ export function showGameView() {
         const match2Win = document.getElementById('match2Win');
         const finalMatch = document.getElementById('matchFinal');
         const startButton = document.getElementById('start-tournament');
+        if (startButton) {
+            const newButton = startButton.cloneNode(true);
+            startButton.replaceWith(newButton);
+
+            newButton.addEventListener('click', () => {
+                runTournament();
+            });
+        }
 
         if (!tournamentArea || !match1Win || !match2Win || !match1 || !match2 || !finalMatch || !startButton) return;
 
@@ -475,10 +481,48 @@ export function showGameView() {
         });
         match1.textContent = 'Player 1 vs Player 2';
         match2.textContent = 'Player 3 vs Player 4';
+        match1Win.textContent = '';
+        match2Win.textContent = '';
         finalMatch.textContent = '';
 
         tournamentArea.style.display = 'block';
+        document.addEventListener('keydown', async (e) => {
+            let direction = null;
+            let paddle = null;
 
+            if (e.key === 'w') {
+                direction = 'up';
+                paddle = 1;
+            }
+            if (e.key === 's') {
+                direction = 'down';
+                paddle = 1;
+            }
+            if (e.key === 'o') {
+                direction = 'up';
+                paddle = 2;
+            }
+            if (e.key === 'l') {
+                direction = 'down';
+                paddle = 2;
+            }
+
+            if (!direction || !paddle) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                await fetch('/api/game/move-paddle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ direction, paddle })
+                });
+            } catch (err) {
+                console.error('Error moving paddle:', err);
+            }
+        });
         const playMatch = (match: { player1: string; player2: string; winner: string | null }) => {
             return new Promise<string>((resolve) => {
                 const canvas = document.getElementById('pong-canvas-tournament') as HTMLCanvasElement | null;
@@ -555,61 +599,23 @@ export function showGameView() {
                 };
 
                 startGame();
-
-                document.addEventListener('keydown', async (e) => {
-                    let direction = null;
-                    let paddle = null;
-
-                    if (e.key === 'w') {
-                        direction = 'up';
-                        paddle = 1;
-                    }
-                    if (e.key === 's') {
-                        direction = 'down';
-                        paddle = 1;
-                    }
-                    if (e.key === 'o') {
-                        direction = 'up';
-                        paddle = 2;
-                    }
-                    if (e.key === 'l') {
-                        direction = 'down';
-                        paddle = 2;
-                    }
-
-                    if (!direction || !paddle) return;
-
-                    try {
-                        const token = localStorage.getItem('token');
-                        await fetch('/api/game/move-paddle', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ direction, paddle })
-                        });
-                    } catch (err) {
-                        console.error('Error moving paddle:', err);
-                    }
-                });
             });
         };
 
         const runTournament = async () => {
             try {
                 const winner1 = await playMatch(tournament.matches[0]);
-                match1Win.textContent += `${winner1}`;
+                match1Win.textContent = `${winner1}`;
                 match1Win.style.color = "green";
                 tournament.matches[2].player1 = winner1;
                 console.log('Finish_1');
                 const winner2 = await playMatch(tournament.matches[1]);
-                match2Win.textContent += `${winner2}`;
+                match2Win.textContent = `${winner2}`;
                 match2Win.style.color = "green";
                 tournament.matches[2].player2 = winner2;
                 console.log('Finish_2');
                 const finalWinner = await playMatch(tournament.matches[2]);
-                finalMatch.textContent += `${finalWinner}`;
+                finalMatch.textContent = `${finalWinner}`;
                 finalMatch.style.color = "green";
                 console.log('Finish_final');
             } catch (error) {
