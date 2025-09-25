@@ -543,7 +543,7 @@ export function showGameView() {
                             }
                             resolve(data.score1 > data.score2 ? match.player1 : match.player2);
                         }
-                        document.getElementById('score-pvp')!.textContent = `Score: ${data.score1} - ${data.score2}`;
+                        document.getElementById('score-tournament')!.textContent = `Score: ${data.score1} - ${data.score2}`;
                     } catch (err) {
                         console.error('Error updating game state:', err);
                     }
