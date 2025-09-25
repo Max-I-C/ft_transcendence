@@ -609,11 +609,13 @@ export function showGameView() {
                 match1Win.style.color = "green";
                 tournament.matches[2].player1 = winner1;
                 console.log('Finish_1');
+                await startCountdown("Match 2 starting in...");
                 const winner2 = await playMatch(tournament.matches[1]);
                 match2Win.textContent = `${winner2}`;
                 match2Win.style.color = "green";
                 tournament.matches[2].player2 = winner2;
                 console.log('Finish_2');
+                await startCountdown("Final starting in...");
                 const finalWinner = await playMatch(tournament.matches[2]);
                 finalMatch.textContent = `${finalWinner}`;
                 finalMatch.style.color = "green";
@@ -630,3 +632,56 @@ export function showGameView() {
 
     document.getElementById('start-tournament')?.addEventListener('click', startTournament);
 }
+
+function startCountdown(message: string): Promise<void> {
+    return new Promise<void>((resolve) => {
+        const countdownElement = document.createElement('div');
+        countdownElement.id = 'countdown-overlay';
+        countdownElement.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            font-size: 3em;
+            font-family: monospace;
+        `;
+
+        const messageElement = document.createElement('div');
+        messageElement.textContent = message;
+        messageElement.style.marginBottom = '20px';
+        messageElement.style.fontSize = '0.5em';
+
+        const timerElement = document.createElement('div');
+        timerElement.id = 'countdown-timer';
+        timerElement.style.fontSize = '2em';
+        timerElement.style.color = '#00ff00';
+
+        countdownElement.appendChild(messageElement);
+        countdownElement.appendChild(timerElement);
+        document.body.appendChild(countdownElement);
+
+        let count = 5;
+        timerElement.textContent = count.toString();
+
+        const countdownInterval = setInterval(() => {
+            count--;
+            timerElement.textContent = count.toString();
+
+            if (count <= 0) {
+                clearInterval(countdownInterval);
+                document.body.removeChild(countdownElement);
+                resolve();
+            }
+        }, 1000);
+    });
+}
+
+
