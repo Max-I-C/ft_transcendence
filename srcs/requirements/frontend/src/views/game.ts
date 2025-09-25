@@ -457,68 +457,160 @@ export function showGameView() {
         const match1 = document.getElementById('match1');
         const match2 = document.getElementById('match2');
         const finalMatch = document.getElementById('final-match');
+        const startButton = document.getElementById('start-tournament');
 
-        if (!tournamentArea || !match1 || !match2 || !finalMatch) return;
+        if (!tournamentArea || !match1 || !match2 || !finalMatch || !startButton) return;
+
+        // Reset tournament state
+        tournament.matches.forEach(match => {
+            match.winner = null;
+            match.player1 = match.player1 || '';
+            match.player2 = match.player2 || '';
+        });
+        match1.textContent = 'Player 1 vs Player 2';
+        match2.textContent = 'Player 3 vs Player 4';
+        finalMatch.textContent = 'Waiting for players...';
 
         tournamentArea.style.display = 'block';
 
         const playMatch = (match: { player1: string; player2: string; winner: string | null }) => {
             return new Promise<string>((resolve) => {
-                const canvas = document.getElementById('pong-canvas-tournament') as HTMLCanvasElement;
-                const ctx = canvas.getContext('2d');
-                if (!ctx) {
-                    console.log('Canvas context is null');
+                const canvas = document.getElementById('pong-canvas-tournament') as HTMLCanvasElement | null;
+                if (!canvas) {
+                    console.error('Canvas element not found');
                     return;
                 }
+
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('Canvas context is null');
+                    return;
+                }
+
                 let gameInterval: number | null = null;
 
-                const gameState = {
-                    paddle1: { x: 10, y: 120, width: 10, height: 60 },
-                    paddle2: { x: 380, y: 120, width: 10, height: 60 },
-                    ball: { x: 200, y: 150, radius: 8, dx: 1, dy: 1, speed: 3 },
-                    score1: 0,
-                    score2: 0,
-                    gameOver: false
+                const resetGameState = async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const res = await fetch('/api/game/restart', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        if (!res.ok) {
+                            throw new Error('Failed to reset game state');
+                        }
+                        const data = await res.json();
+                        console.log('Game state reset:', data);
+                    } catch (err) {
+                        console.error('Error resetting game state:', err);
+                    }
                 };
 
-                const updateGame = () => {
-                    if (gameState.gameOver) {
-                        if (gameInterval !== null) {
-                            clearInterval(gameInterval);
+                const updateGame = async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const res = await fetch('/api/game/init', {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        const data = await res.json();
+
+                        // Update the canvas with the game state
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = '#222';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(data.paddle1.x, data.paddle1.y, data.paddle1.width, data.paddle1.height);
+                        ctx.fillRect(data.paddle2.x, data.paddle2.y, data.paddle2.width, data.paddle2.height);
+                        ctx.beginPath();
+                        ctx.arc(data.ball.x, data.ball.y, data.ball.radius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Check for game over
+                        if (data.gameOver) {
+                            if (gameInterval !== null) {
+                                clearInterval(gameInterval);
+                            }
+                            resolve(data.score1 > data.score2 ? match.player1 : match.player2);
                         }
-                        resolve(gameState.score1 > gameState.score2 ? match.player1 : match.player2);
-                        return;
+                    } catch (err) {
+                        console.error('Error updating game state:', err);
+                    }
+                };
+
+                const startGame = async () => {
+                    await resetGameState();
+                    gameInterval = window.setInterval(updateGame, 1000 / 60);
+                };
+
+                startGame();
+
+                document.addEventListener('keydown', async (e) => {
+                    let direction = null;
+                    let paddle = null;
+
+                    if (e.key === 'w') {
+                        direction = 'up';
+                        paddle = 1;
+                    }
+                    if (e.key === 's') {
+                        direction = 'down';
+                        paddle = 1;
+                    }
+                    if (e.key === 'o') {
+                        direction = 'up';
+                        paddle = 2;
+                    }
+                    if (e.key === 'l') {
+                        direction = 'down';
+                        paddle = 2;
                     }
 
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#222';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(gameState.paddle1.x, gameState.paddle1.y, gameState.paddle1.width, gameState.paddle1.height);
-                    ctx.fillRect(gameState.paddle2.x, gameState.paddle2.y, gameState.paddle2.width, gameState.paddle2.height);
-                    ctx.beginPath();
-                    ctx.arc(gameState.ball.x, gameState.ball.y, gameState.ball.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                };
+                    if (!direction || !paddle) return;
 
-                gameInterval = window.setInterval(updateGame, 1000 / 60);
+                    try {
+                        const token = localStorage.getItem('token');
+                        await fetch('/api/game/move-paddle', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ direction, paddle })
+                        });
+                    } catch (err) {
+                        console.error('Error moving paddle:', err);
+                    }
+                });
             });
         };
 
         const runTournament = async () => {
-            const winner1 = await playMatch(tournament.matches[0]);
-            match1.textContent += ` - Winner: ${winner1}`;
-            tournament.matches[2].player1 = winner1;
-
-            const winner2 = await playMatch(tournament.matches[1]);
-            match2.textContent += ` - Winner: ${winner2}`;
-            tournament.matches[2].player2 = winner2;
-
-            const finalWinner = await playMatch(tournament.matches[2]);
-            finalMatch.textContent += ` - Winner: ${finalWinner}`;
+            try {
+                const winner1 = await playMatch(tournament.matches[0]);
+                match1.textContent += ` - Winner: ${winner1}`;
+                tournament.matches[2].player1 = winner1;
+                console.log('Finish_1');
+                const winner2 = await playMatch(tournament.matches[1]);
+                match2.textContent += ` - Winner: ${winner2}`;
+                tournament.matches[2].player2 = winner2;
+                console.log('Finish_2');
+                const finalWinner = await playMatch(tournament.matches[2]);
+                finalMatch.textContent += ` - Winner: ${finalWinner}`;
+                console.log('Finish_final');
+            } catch (error) {
+                console.error('Error during tournament execution:', error);
+            }
         };
 
-        runTournament();
+        // Wait for the user to click "Start Tournament"
+        startButton.addEventListener('click', () => {
+            runTournament();
+        });
     }
 
     document.getElementById('start-tournament')?.addEventListener('click', startTournament);
