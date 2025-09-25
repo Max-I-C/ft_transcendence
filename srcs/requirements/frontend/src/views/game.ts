@@ -481,9 +481,6 @@ export function showGameView() {
         });
         match1.textContent = 'Player 1 vs Player 2';
         match2.textContent = 'Player 3 vs Player 4';
-        match1Win.textContent = '';
-        match2Win.textContent = '';
-        finalMatch.textContent = '';
 
         tournamentArea.style.display = 'block';
         document.addEventListener('keydown', async (e) => {
@@ -604,6 +601,9 @@ export function showGameView() {
 
         const runTournament = async () => {
             try {
+                match1Win.textContent = '';
+                match2Win.textContent = '';
+                finalMatch.textContent = '';
                 const winner1 = await playMatch(tournament.matches[0]);
                 match1Win.textContent = `${winner1}`;
                 match1Win.style.color = "green";
