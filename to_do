@@ -1,3 +1,6 @@
 # Faire des verif sur les acces sans token 
 # Faire gaffe la police custom
 # Update le wss et HTTPS
+
+
+# Faire le management de refused. pour l'invite, et aussi un systeme qui quitte proprement le lobby.

@@ -1075,7 +1075,7 @@ button
 }
 
 .game-card#tournament-game-card:hover {
-    background: url('/views/images/card-hover.gif') center center / cover no-repeat;
+    background: url('/views/images/tournament.gif') center center / cover no-repeat;
     transform: scale(1.07) translateY(-10px);
     box-shadow: 0 16px 48px rgba(255, 76, 76, 0.25); /* Ombre rouge pour différencier */
 }
