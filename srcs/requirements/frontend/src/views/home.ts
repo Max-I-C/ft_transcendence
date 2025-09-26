@@ -13,12 +13,13 @@ export function showHomeView() {
 				<li><a href="#" id="logout-link">⏻</a></li>
 			</ul>
 		</nav>
-		<div class="welcome-bubble">
-			<p>Welcome 👋</p>
+		<div class="welcome-bubble pong-theme">
+			<p>Welcome to the last project ! 🏓</p>
+			<p>Challenge your friends and climb the leaderboard!</p>
 		</div>
 	`;
 
-    document.body.className = 'home-page';
+    document.body.className = 'home-page pong-background';
 	document.getElementById('game-link')!.addEventListener('click', () => navigateTo('/game'));
 	document.getElementById('profile-link')!.addEventListener('click', () => navigateTo('/profile'));
 	document.getElementById('social-link')!.addEventListener('click', () => navigateTo('/social'));

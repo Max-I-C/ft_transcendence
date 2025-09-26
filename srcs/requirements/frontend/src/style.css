@@ -46,6 +46,32 @@ body.social-page {
     align-items: center;
 }
 
+body.pong-background {
+  background: linear-gradient(135deg, #000000, #1e1e2f);
+  background-image: url('/views/images/background.gif');
+  background-size: cover;
+  animation: pongAnimation 10s infinite alternate;
+}
+
+.pong-theme {
+  font-family: 'moonspace', monospace;
+  color: #4caf50;
+  text-shadow: 0 0 10px #4caf50;
+  border: 2px solid #4caf50;
+  padding: 1rem;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+@keyframes pongAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
 .main-container
 {
     background-color: white;
@@ -988,4 +1014,281 @@ button
 
 .status-indicator.offline {
   background-color: gray;
+}
+
+/* Game choice cards */
+.game-choice-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  margin-top: 5rem;
+}
+
+.game-card {
+    position: relative;
+    width: 320px;
+    height: 180px;
+    background: linear-gradient(135deg, #222, #422F51);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    color: #fff;
+    padding: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.5s ease-in-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.game-card h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.game-card p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* Ajout du GIF au hover */
+.game-card:hover {
+    background: url('/views/images/card-hover.gif') center center / cover no-repeat;
+    transform: scale(1.07) translateY(-10px);
+    box-shadow: 0 16px 48px rgba(106, 76, 255, 0.25);
+}
+
+.game-card.disabled:hover {
+    background: none; /* Pas de GIF pour les cartes désactivées */
+    transform: none;
+    box-shadow: none;
+}
+
+/* Ajout du GIF au hover pour la carte PvP */
+.game-card#pvp-game-card:hover {
+    background: url('/views/images/card-pvp-hover.gif') center center / cover no-repeat;
+    transform: scale(1.07) translateY(-10px);
+    box-shadow: 0 16px 48px rgba(255, 76, 76, 0.25); /* Ombre rouge pour différencier */
+}
+
+.game-card#tournament-game-card:hover {
+    background: url('/views/images/tournament.gif') center center / cover no-repeat;
+    transform: scale(1.07) translateY(-10px);
+    box-shadow: 0 16px 48px rgba(255, 76, 76, 0.25); /* Ombre rouge pour différencier */
+}
+
+/* Game interface */
+.game-interface {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.game-header {
+    text-align: center;
+}
+
+.game-header h2 {
+    font-size: 2rem;
+    color: #fff;
+}
+
+.game-over-message {
+    font-size: 1.2rem;
+    color: red;
+    font-weight: bold;
+}
+
+.game-canvas-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #111;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.game-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.game-button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.game-button:hover {
+    transform: translateY(-3px);
+}
+
+#play-game {
+    background-color: #4caf50;
+    color: white;
+}
+
+#play-game:hover {
+    background-color: #45a049;
+}
+
+#restart-game {
+    background-color: #f44336;
+    color: white;
+}
+
+#restart-game:hover {
+    background-color: #e53935;
+}
+
+#simulate-game {
+    background-color: #2196f3;
+    color: white;
+}
+
+#simulate-game:hover {
+    background-color: #1e88e5;
+}
+
+.game-score {
+    font-size: 1.2rem;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Style amélioré pour l'interface PvP */
+.pvp-lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(66, 47, 81, 0.95), rgba(138, 31, 65, 0.95));
+    backdrop-filter: blur(10px);
+}
+
+#lobby-status {
+    font-size: 1.2rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+#lobby-players {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+#lobby-players p {
+    margin: 0;
+    color: #fff;
+}
+
+/* Boutons améliorés */
+.game-button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#join-pvp {
+    background: linear-gradient(135deg, #ff5252, #ff0055);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
+}
+
+#join-pvp:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 82, 82, 0.4);
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { transform: translateY(-12px) scale(1.05) rotateX(10deg); }
+    50% { transform: translateY(-12px) scale(1.06) rotateX(10deg); }
+    100% { transform: translateY(-12px) scale(1.05) rotateX(10deg); }
+}
+
+/* Tournament Page Enhancements */
+#tournament-area {
+    background: linear-gradient(135deg, #1e1e2f, #3a3a60);
+    color: #eee;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    margin: 2rem auto;
+    max-width: 800px;
+    text-align: center;
+}
+
+#tournament-bracket {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#tournament-bracket p {
+    font-size: 1.2rem;
+    margin: 0.5rem 0;
+    color: #fff;
+}
+
+#tournament-controls {
+    margin-top: 1.5rem;
+}
+
+#tournament-controls button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#tournament-controls button:hover {
+    background-color: #357ab8;
+    transform: scale(1.05);
+}
+
+#tournament-controls button:active {
+    transform: scale(0.95);
+}
+
+.game-canvas-container {
+    margin: 1.5rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-canvas-container canvas {
+    border: 2px solid #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }

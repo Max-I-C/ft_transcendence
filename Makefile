@@ -17,4 +17,4 @@ clean:
 fclean: clean
 		docker system prune -af --volumes
 
-re: fclean all
+re: clean all

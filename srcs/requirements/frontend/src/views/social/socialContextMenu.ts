@@ -10,9 +10,63 @@
 import { info_message } from './socialChat.js';
 import { loadFriendList } from './socialFriends.js';
 import { showProfilePopup } from './socialProfile.js';
+import { initializeWebSocket } from '../../utils/webSocketUtils.js';
 
 let currentFriendId: string | null = null;
 let lastContextClickPos: { x: number; y: number } | null = null;
+let privateGameCtx: CanvasRenderingContext2D | null = null;
+let lastMoveTime = 0; // Pour throttling des mouvements
+
+export const lobbyStore = {
+    currentLobbyId: null as string | null
+};
+
+export const gameStore = {
+    privateGameState: null as string | null
+};
+
+export function updateLobbyPlayers(players: { id: string, username: string }[] = []) {
+    const player1 = players[0]?.username || 'Waiting...';
+    const player2 = players[1]?.username || 'Waiting...';
+
+    document.getElementById('player1')!.textContent = player1;
+    document.getElementById('player2')!.textContent = player2;
+}
+
+export function initPrivateGame(gameState: any) {
+    const canvas = document.getElementById('pong-canvas-private') as HTMLCanvasElement;
+    privateGameCtx = canvas.getContext('2d')!;
+    gameStore.privateGameState = gameState;
+    
+    // Écouter les touches pour déplacer le paddle (même logique que PvP publics)
+    document.addEventListener('keydown', async (e) => {
+        const now = Date.now();
+        // Throttling : limiter les requêtes à max 1 toutes les 50ms
+        if (now - lastMoveTime < 50) return;
+        
+        let direction = null;
+        if (e.key === 'w') direction = 'up';
+        if (e.key === 's') direction = 'down';
+        
+        if (!direction) return;
+        
+        lastMoveTime = now;
+        
+        try {
+            const token = localStorage.getItem('token');
+            await fetch('/api/game/pvp/move-paddle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ direction })
+            });
+        } catch (err) {
+            console.error('Error moving paddle:', err);
+        }
+    });
+}
 
 // -- Definition of the display for the right click menu -- //
 export function openContextMenuFor(friendId: string, x: number, y: number) {
@@ -120,4 +174,34 @@ export function setupContextMenu(socket: WebSocket) {
             alert('Error blocking friend');
         }
     });
+    // -- Part for the button "Invite" -- //
+    document.getElementById('invite-action')?.addEventListener('click', async () => {
+        if (!currentFriendId) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        (document.querySelector('.social-container') as HTMLElement)!.style.display = 'none';
+        document.getElementById('private-game')!.style.display = 'block';
+
+        const res = await fetch('/api/game/private/lobby', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ invitedId: currentFriendId }) // très important
+        });
+
+        const data = await res.json();
+        lobbyStore.currentLobbyId = data.lobbyId;
+
+        if (data.joined) {
+            document.getElementById('lobby-status')!.innerHTML = `<span style="color:green;">Private lobby ready! Waiting for game...</span>`;
+        } 
+        else {
+            document.getElementById('lobby-status')!.innerHTML = `<span style="color:orange;">Private lobby created. Waiting for your friend...</span>`;
+        }
+        updateLobbyPlayers(data.players);
+    });
+
 }
