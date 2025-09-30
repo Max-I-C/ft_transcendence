@@ -11,6 +11,7 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 // Asegúrate de que esta URL coincida con lo que tienes en tu .env y en la Consola de Google
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback';
+const frontendBase = 'http://localhost:4443'; 
 
 // Función auxiliar para emitir JWT
 function createJwt(fastify, user) {
@@ -135,19 +136,20 @@ export default async function authRoutes(fastify) {
 
             const user = await handleGoogleUser(adaptedProfile);
             
+            // LÓGICA DE REDIRECCIÓN AÑADIDA AQUÍ:
             if (user.twoaf === 1) {
-                 return reply.send({
-                    message: '2FA_REQUIRED', 
-                    userId: user.id 
-                });
+                // Redirige al frontend con el userId para la verificación 2FA
+                return reply.redirect(`${frontendBase}/oauth-callback?userId=${user.id}`); 
             }
 
             const jwt = createJwt(fastify, user);
-            return reply.send({ message: 'Login successful', token: jwt });
+            // Redirige al frontend con el token JWT
+            return reply.redirect(`${frontendBase}/oauth-callback?token=${jwt}`); 
 
         } catch (error) {
             fastify.log.error('Google Auth Error:', error);
-            return reply.code(401).send({ message: 'Google login failed' });
+            // Redirige al login del frontend si hay un fallo
+            return reply.redirect(`${frontendBase}/login?error=google_failed`);
         }
     });
 
