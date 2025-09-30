@@ -30,15 +30,17 @@ db.exec(`
     password TEXT NOT NULL,
     twoaf INTEGER DEFAULT 0,
     avatar TEXT,
-
+    
+    google_id TEXT UNIQUE,     
+    totp_secret TEXT,          
+    
     game_play INTEGER DEFAULT 10,
     game_win INTEGER DEFAULT 6,
     game_loss INTEGER DEFAULT 4,
     score_total INTEGER DEFAULT 10,
     level INTEGER DEFAULT 1,
     
-
-    achievements TEXT DEFAULT '[]' -- JSON string, ex: '["first_win", "level_10"]'
+    achievements TEXT DEFAULT '[]'
   );
 `);
 
@@ -46,11 +48,10 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS match_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    match_date DATETIME DEFAULT CURRENT_TIMESTAMP, -- date du match
-    match_score TEXT NOT NULL,                     -- ex: "2-3"
-    result TEXT CHECK(result IN ('win', 'loss')) NOT NULL, -- win ou loss
-    points_change INTEGER NOT NULL,                -- ex: +30 ou -15
-
+    match_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    match_score TEXT NOT NULL,
+    result TEXT CHECK(result IN ('win', 'loss')) NOT NULL,
+    points_change INTEGER NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
 `);
@@ -61,8 +62,7 @@ db.exec(`
     sender_id INTEGER NOT NULL,
     receiver_id INTEGER NOT NULL,
     status TEXT CHECK(status IN ('pending', 'accepted', 'declined')) NOT NULL DEFAULT 'pending',
-    created DATETIME DEFAULT CURRENT_TIMESTAMP, -- date
-
+    created DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
   );
