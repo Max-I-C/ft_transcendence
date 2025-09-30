@@ -1,4 +1,4 @@
-import { showLoginView, show2FAVerificationView } from './views/login.js';
+import { showLoginView, show2FAVerificationView, show2FASetupView } from './views/login.js';
 import { showRegisterView } from './views/register.js';
 import { showSuccessView } from './views/success.js';
 import { showHomeView } from './views/home.js';
@@ -15,7 +15,7 @@ export function navigateTo(path: string, state: any = null) {
 }
 
 const protectedRoutes = ['/home', '/profile', '/game', '/social'];
-const specialRoutes = ['/verify-2fa', '/oauth-callback']; 
+const specialRoutes = ['/verify-2fa', '/oauth-callback', '/2fa-setup']; 
 
 async function router(path: string) {
     if(protectedRoutes.includes(path)){
@@ -40,6 +40,11 @@ async function router(path: string) {
             navigateTo('/login');
             return;
         }
+    }
+    // 2FA setup route
+    if (path === '/2fa-setup') {
+        show2FASetupView();
+        return;
     }
     
     switch (path) {

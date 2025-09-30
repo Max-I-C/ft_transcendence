@@ -125,3 +125,103 @@ export function showLoginView() {
         }
     });
 }
+
+export function show2FASetupView() {
+    const app = document.getElementById('app')!;
+    app.innerHTML = `
+        <div class="main-container">
+            <div class="welcome-text">Activer la 2FA</div>
+            <div class="form-container">
+                <div id="qr-code-container" style="text-align: center; margin: 20px 0;">
+                    <p>Chargement du QR Code...</p>
+                </div>
+                <form id="2fa-setup-form" style="display: none;">
+                    <p>Scannez le QR code avec Google Authenticator, puis entrez le code à 6 chiffres :</p>
+                    <input type="text" id="2fa-token" placeholder="123456" maxlength="6" required />
+                    <div id="2faSetupError" class="error-message"></div>
+                    <button class="btn" type="submit">Activer la 2FA</button>
+                </form>
+                <button class="btn" id="back-to-home">Retour à l'accueil</button>
+            </div>
+        </div>
+    `;
+
+    document.body.className = 'auth-page';
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Vous devez être connecté pour activer la 2FA');
+        navigateTo('/login');
+        return;
+    }
+
+    // For the QR, it was not call before I think //
+    fetch('/api/2fa/setup', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.qrDataUrl) {
+            document.getElementById('qr-code-container')!.innerHTML = `
+                <img src="${data.qrDataUrl}" alt="QR Code for 2FA" style="max-width: 200px;" />
+                <p>Scannez ce QR code avec Google Authenticator</p>
+            `;
+            document.getElementById('2fa-setup-form')!.style.display = 'block';
+            
+            (document.getElementById('2fa-setup-form') as any).tempSecret = data.tempSecret;
+        } else {
+            document.getElementById('qr-code-container')!.innerHTML = 
+                '<p>Erreur: ' + (data.message || 'Impossible de générer le QR code') + '</p>';
+        }
+    })
+    .catch(err => {
+        console.error('Error setting up 2FA:', err);
+        document.getElementById('qr-code-container')!.innerHTML = 
+            '<p>Erreur lors de la configuration 2FA</p>';
+    });
+
+    // Activation management //
+    document.getElementById('2fa-setup-form')!.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const tokenInput = (document.getElementById('2fa-token') as HTMLInputElement).value;
+        const tempSecret = (document.getElementById('2fa-setup-form') as any).tempSecret;
+
+        try {
+            const response = await fetch('/api/2fa/enable', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    token: tokenInput, 
+                    tempSecret: tempSecret 
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('2FA activé avec succès !');
+                localStorage.setItem('token', data.token);
+                navigateTo('/home');
+            } else {
+                document.getElementById('2faSetupError')!.innerText = 
+                    data.error || 'Erreur lors de l\'activation';
+            }
+        } catch (err) {
+            document.getElementById('2faSetupError')!.innerText = 
+                'Erreur réseau lors de l\'activation 2FA';
+            console.error(err);
+        }
+    });
+
+    document.getElementById('back-to-home')!.addEventListener('click', () => {
+        navigateTo('/home');
+    });
+}

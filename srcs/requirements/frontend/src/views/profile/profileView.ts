@@ -7,6 +7,7 @@
 */
 
 import { renderProfileUI } from './profileUI.js';
+import { navigateTo } from '../../main.js';
 import { loadProfile, updateProfileApi } from './profileApi.js';
 import { drawDonutChart } from './profileChart.js';
 import { renderRanks } from './profileRank.js';
@@ -35,15 +36,12 @@ export async function showProfileView() {
     (document.getElementById('games-lost') as HTMLElement).innerText = String(profile.game_loss ?? 'Unknow');
     (document.getElementById('score') as HTMLElement).innerText = String(profile.score_total ?? 'Unknow');
 
-    const twoafInput = document.getElementById('twoaf-input') as HTMLInputElement;
-    const twoafText = document.getElementById('twoaf-text') as HTMLElement;
-
-    if (profile.twoaf === 1) {
-        twoafInput.checked = true;
-        twoafText.innerText = 'ON';
-    } else {
-        twoafInput.checked = false;
-        twoafText.innerText = 'OFF';
+    // Update the 2FA button label depending on current state
+    const manage2faBtnElem = document.getElementById('manage-2fa-btn') as HTMLButtonElement | null;
+    if (manage2faBtnElem) {
+        manage2faBtnElem.textContent = profile.twoaf === 1 ? 'Manage 2FA' : 'Enable 2FA';
+        manage2faBtnElem.classList.toggle('enabled', profile.twoaf === 1);
+        manage2faBtnElem.classList.toggle('disabled', profile.twoaf !== 1);
     }
     // -- Load the rank of the user -- //
     renderRanks(profile);
@@ -72,8 +70,6 @@ export async function showProfileView() {
         const usernameInput = document.getElementById('username-input') as HTMLInputElement;
         const emailText = document.getElementById('email-text')!;
         const emailInput = document.getElementById('email-input') as HTMLInputElement;
-        const twoafText = document.getElementById('twoaf-text')!;
-        const twoafInput = document.getElementById('twoaf-input') as HTMLInputElement;
         const saveBtn = document.getElementById('save-profile')!;
         const changeAvatarBtn = document.getElementById('change-avatar')!;
         const passwordInput = document.getElementById('password-input') as HTMLInputElement;
@@ -81,14 +77,11 @@ export async function showProfileView() {
 
         usernameInput.value = usernameText.textContent || '';
         emailInput.value = emailText.textContent || '';
-        twoafInput.checked = twoafText.textContent === 'ON';
 
         usernameText.style.display = 'none';
         usernameInput.style.display = 'inline';
         emailText.style.display = 'none';
         emailInput.style.display = 'inline';
-        twoafText.style.display = 'none';
-        twoafInput.style.display = 'inline';
         saveBtn.style.display = 'inline';
         passwordInput.style.display = 'inline';
         passwordConfirmInput.style.display = 'inline';
@@ -138,8 +131,7 @@ export async function showProfileView() {
 
         const updatedProfile: any = {
             username: (document.getElementById('username-input') as HTMLInputElement).value,
-            email: (document.getElementById('email-input') as HTMLInputElement).value,
-            twoaf: (document.getElementById('twoaf-input') as HTMLInputElement).checked
+            email: (document.getElementById('email-input') as HTMLInputElement).value
         };
 
         if (password) updatedProfile.password = password;
@@ -152,4 +144,18 @@ export async function showProfileView() {
             alert('Error during the update');
         }
     });
+
+    // -- Manage 2FA button (navigates to the 2FA setup view) -- //
+    const manage2faBtn = document.getElementById('manage-2fa-btn');
+    if (manage2faBtn) {
+        manage2faBtn.addEventListener('click', () => {
+            const tokenLocal = localStorage.getItem('token');
+            if (!tokenLocal) {
+                alert('You must be logged in to manage 2FA');
+                navigateTo('/login');
+                return;
+            }
+            navigateTo('/2fa-setup');
+        });
+    }
 }

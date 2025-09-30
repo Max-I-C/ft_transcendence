@@ -31,10 +31,12 @@ export function renderProfileUI(profile: any) {
                 </div>
                 <p><strong>Userame :</strong> <span id="username-text">loading.....</span> <input id="username-input" type="text" style="display: none;"></p>
                 <p><strong>Email :</strong> <span id="email-text">loading.....</span> <input id="email-input" type="email" style="display: none;"></p>
-                <p><strong>2AF :</strong> <span id="twoaf-text">OFF</span> <input id="twoaf-input" type="checkbox" style="display: none;"></p>
                 <p><strong>New password :</strong> <input id="password-input" type="password" style="display: none;"></p>
                 <p><strong>Confirm password :</strong> <input id="password-confirm-input" type="password" style="display: none;"></p>
                 <p><strong>Status :</strong> Online 🟢</p>
+                <p>
+                    <button id="manage-2fa-btn" class="btn small">Manage 2FA</button>
+                </p>
                 <button id="save-profile" class="save-btn" style="display: none;">💾 Save</button>
             </div>
             <div class="glass">
