@@ -11,7 +11,7 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 // Asegúrate de que esta URL coincida con lo que tienes en tu .env y en la Consola de Google
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback';
-const frontendBase = 'http://localhost:4443'; 
+const frontendBase = 'https://localhost:4443'; 
 
 // Función auxiliar para emitir JWT
 function createJwt(fastify, user) {
