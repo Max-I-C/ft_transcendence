@@ -35,6 +35,16 @@ export async function showProfileView() {
     (document.getElementById('games-lost') as HTMLElement).innerText = String(profile.game_loss ?? 'Unknow');
     (document.getElementById('score') as HTMLElement).innerText = String(profile.score_total ?? 'Unknow');
 
+    const twoafInput = document.getElementById('twoaf-input') as HTMLInputElement;
+    const twoafText = document.getElementById('twoaf-text') as HTMLElement;
+
+    if (profile.twoaf === 1) {
+        twoafInput.checked = true;
+        twoafText.innerText = 'ON';
+    } else {
+        twoafInput.checked = false;
+        twoafText.innerText = 'OFF';
+    }
     // -- Load the rank of the user -- //
     renderRanks(profile);
 

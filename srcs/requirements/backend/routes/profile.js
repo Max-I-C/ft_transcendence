@@ -26,7 +26,7 @@ export default async function profileRoutes(fastify) {
   fastify.get('/profile', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const stmtProfile = db.prepare(`
-      SELECT username, email, avatar, game_play, game_win, game_loss, score_total, level
+      SELECT username, email, twoaf, avatar, game_play, game_win, game_loss, score_total, level
       FROM users 
       WHERE id = ?
     `);
