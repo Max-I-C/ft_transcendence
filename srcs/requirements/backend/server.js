@@ -8,9 +8,11 @@
 */
 
 // -- Import of all the required modules -- //
+import 'dotenv/config'; // Asegúrate de que esto esté al principio para las credenciales de Google
 import Fastify from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import websocket from '@fastify/websocket';
+// import fastifyOauth2 from 'fastify-oauth2'; // <-- ELIMINAR O COMENTAR ESTA LÍNEA
 import { db } from './db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';

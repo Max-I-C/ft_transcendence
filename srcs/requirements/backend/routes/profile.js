@@ -26,7 +26,7 @@ export default async function profileRoutes(fastify) {
   fastify.get('/profile', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
     const stmtProfile = db.prepare(`
-      SELECT username, email, avatar, game_play, game_win, game_loss, score_total, level
+      SELECT username, email, twoaf, avatar, game_play, game_win, game_loss, score_total, level
       FROM users 
       WHERE id = ?
     `);
@@ -52,7 +52,7 @@ export default async function profileRoutes(fastify) {
   // # This is the function that is linked to the edit button on the profile page # //
   fastify.post('/profile/update', { preValidation: [fastify.authenticate] }, async (request, reply) => {
     const user = request.user;
-    const { username, email, twoaf, password } = request.body;
+    const { username, email, password } = request.body;
 
     const existingUser = db.prepare('SELECT * FROM users WHERE (username = ? OR email = ?) AND id != ?')
       .get(username, email, user.id);
@@ -62,8 +62,8 @@ export default async function profileRoutes(fastify) {
     }
 
     try {
-      let query = `UPDATE users SET username = ?, email = ?, twoaf = ?`;
-      const params = [username, email, twoaf ? 1 : 0];
+      let query = `UPDATE users SET username = ?, email = ?`;
+      const params = [username, email];
 
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);

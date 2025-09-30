@@ -11,7 +11,12 @@
         "@fastify/multipart": "^9.0.3",
         "@fastify/websocket": "^11.2.0",
         "better-sqlite3": "^9.0.0",
-        "fastify": "^5.0.0"
+        "fastify": "^5.0.0",
+        "qrcode": "^1.5.4",
+        "speakeasy": "^2.0.0",
+        "dotenv": "^16.4.5",
+        "node-fetch": "^3.3.2",
+        "bcrypt": "^5.1.1"
     },
     "devDependencies": {
         "@types/ws": "^8.18.1"

@@ -23,6 +23,8 @@ services:
     container_name: backend
     build:
       context: ./requirements/backend
+    env_file:
+      - .env
     networks:
       - transcendence
     restart: unless-stopped
