@@ -74,7 +74,7 @@ In this project, a list of different **modules** is provided in the subject. We 
     <p>
         <img src="srcs_img/login.png"/>
         <img src="srcs_img/register.png"/>
-        <img src="srcs_img/home.png"/>
+        <img src="srcs_img/welcome.png"/>
         <img src="srcs_img/game.png"/>
         <img src="srcs_img/social.png"/>
         <img src="srcs_img/profile.png"/>
