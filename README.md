@@ -1,10 +1,10 @@
 # ft_transcendence
 
-ft_transcendence is a project aimed at creating a web application game based on the original Pong game.
+**ft_transcendence** is a project aimed at creating a **web application** game based on the **original Pong game**.
 
-In this project, a list of different modules is provided in the subject. We are free to choose the modules we want, as long as they reach a minimum number of points. Points are determined by whether a module is classified as major or minor. Major modules are worth 2 points, while minor modules are worth 1 point.
+In this project, a list of different **modules** is provided in the subject. We are free to choose the modules we want, as long as they reach a **minimum number of points**. Points are determined by whether a module is classified as major or minor. Major modules are worth 2 points, while minor modules are worth 1 point.
 
-All the modules will be described in the section below.
+**All the modules** will be described in the section below.
 
 ## Modules
 🔴 → Major module
