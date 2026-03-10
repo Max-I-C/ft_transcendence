@@ -74,6 +74,17 @@ In this project, a list of different **modules** is provided in the subject. We 
     - [x]  It should be possible for two players to play remotely. Each player is located on a separated computer, accessing the same website and playing the same Pong game.
 
 ## Images
+<div>
+    <p>
+        <img src="srcs_img/login.png"/>
+        <img src="srcs_img/register.png"/>
+        <img src="srcs_img/home.png"/>
+        <img src="srcs_img/game.png"/>
+        <img src="srcs_img/social.png"/>
+        <img src="srcs_img/profile.png"/>
+        <img src="srcs_img/stat.png"/>
+    </p>
+</div>
 
 ## Installation
 - Create or edit .env file
