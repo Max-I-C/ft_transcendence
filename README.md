@@ -40,10 +40,6 @@ In this project, a list of different **modules** is provided in the subject. We 
     interface.
     
 5. Implement Two-Factor Authentication (2FA) and JWT. 🔴
-    - [x]  Investigar sobre el Framework Legal de protección de Datos de la comisión europea para poder empezar
-        
-        [How does the **Legal framework of EU data protection affects us??**](https://www.notion.so/How-does-the-Legal-framework-of-EU-data-protection-affects-us-25632d0c92d8805cac42f8606abdd4ad?pvs=21)
-        
     - [x]  Implement Two-Factor Authentication (2FA) as an additional layer of security
     for user accounts, requiring users to provide a secondary verification method,
     such as a one-time code, in addition to their password.
